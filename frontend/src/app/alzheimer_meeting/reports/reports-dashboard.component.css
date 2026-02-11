@@ -1,0 +1,146 @@
+.reports-container {
+    padding: 32px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.header-section {
+    margin-bottom: 40px;
+}
+
+.header-section h2 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.section {
+    margin-bottom: 48px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.filter-btn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Report Cards */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.report-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+}
+
+.report-card:hover {
+    transform: translateY(-4px);
+}
+
+.report-icon {
+    font-size: 2rem;
+    color: #e74c3c;
+}
+
+.report-info h4 {
+    margin: 0 0 8px 0;
+    color: #34495e;
+}
+
+.report-date {
+    display: block;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    margin-bottom: 8px;
+}
+
+.badge {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge.pending {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.download-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: auto;
+    transition: background 0.2s;
+}
+
+.download-btn:hover {
+    background: #2980b9;
+}
+
+/* Transcription List */
+.list-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.list-item {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.item-main h4 {
+    margin: 0 0 4px 0;
+    color: #2c3e50;
+}
+
+.meta {
+    color: #95a5a6;
+    font-size: 0.9rem;
+}
+
+.view-btn {
+    background: transparent;
+    border: 1px solid #3498db;
+    color: #3498db;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-btn:hover {
+    background: #e3f2fd;
+}

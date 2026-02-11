@@ -1,0 +1,5 @@
+/* Main layout specific styles if needed */
+main {
+    min-height: 80vh;
+    /* Ensure footer stays at bottom */
+}

@@ -1,0 +1,44 @@
+<div class="communication-layout">
+    <aside class="sidebar" [class.collapsed]="isSidebarCollapsed">
+        <div class="sidebar-header">
+            <h2 *ngIf="!isSidebarCollapsed">Communication</h2>
+            <button class="toggle-btn" (click)="toggleSidebar()">
+                <i class="fa-solid" [class.fa-chevron-left]="!isSidebarCollapsed"
+                    [class.fa-chevron-right]="isSidebarCollapsed"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a routerLink="/communication/messaging" routerLinkActive="active">
+                        <i class="fa-solid fa-comments"></i>
+                        <span *ngIf="!isSidebarCollapsed">Messaging & Feed</span>
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/communication/groups" routerLinkActive="active">
+                        <i class="fa-solid fa-users"></i>
+                        <span *ngIf="!isSidebarCollapsed">Groups & Support</span>
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/communication/admin" routerLinkActive="active">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span *ngIf="!isSidebarCollapsed">Moderation (Admin)</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer" *ngIf="!isSidebarCollapsed">
+            <div class="status-summary">
+                <p><i class="fa-solid fa-wifi"></i> Online</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <router-outlet></router-outlet>
+    </main>
+</div>

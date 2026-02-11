@@ -1,0 +1,115 @@
+<header class="header">
+    <div class="container header-container">
+        <div class="logo">
+            <a href="/">
+                <!-- Logo Image -->
+                <img src="logo.png" alt="Grankare Logo" class="brand-logo">
+                <div class="logo-text">
+                    <span class="brand-name">FAKARNI</span>
+                    <span class="tagline">فــــــــــــكرنـــــــــــــي</span>
+                </div>
+            </a>
+        </div>
+
+        <nav class="nav-menu" [class.open]="isMobileMenuOpen">
+            <ul>
+                <li>
+                    <a routerLink="/home" class="nav-link" routerLinkActive="active" (click)="isMobileMenuOpen = false">
+                        HOME
+                    </a>
+                </li>
+
+                <!-- Alzheimer Dropdown -->
+                <li class="dropdown" [class.active]="activeDropdown === 'alzheimer'"
+                    (click)="toggleDropdown('alzheimer')">
+                    <a class="nav-link" [class.active]="activeDropdown === 'alzheimer'">
+                        ALZHEIMER SPACE <i class="fa-solid fa-chevron-down caret"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a routerLink="/alzheimer_meeting/consultation"
+                                (click)="isMobileMenuOpen = false">Calendar</a></li>
+                        <li><a routerLink="/alzheimer_meeting/favorites"
+                                (click)="isMobileMenuOpen = false">Favorites</a></li>
+                        <li><a routerLink="/alzheimer_meeting/reports" (click)="isMobileMenuOpen = false">Reports</a>
+                        </li>
+                        <li><a routerLink="/alzheimer_meeting/notifications"
+                                (click)="isMobileMenuOpen = false">Notifications</a></li>
+                    </ul>
+                </li>
+
+                <!-- Geofencing Dropdown -->
+                <li class="dropdown" [class.active]="activeDropdown === 'geofencing'"
+                    (click)="toggleDropdown('geofencing')">
+                    <a class="nav-link" [class.active]="activeDropdown === 'geofencing'">
+                        GEOFENCING <i class="fa-solid fa-chevron-down caret"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a routerLink="/geofencing/tracking" (click)="isMobileMenuOpen = false">Live Tracking</a>
+                        </li>
+                        <li><a routerLink="/geofencing/alerts" (click)="isMobileMenuOpen = false">Alert & History</a>
+                        </li>
+                        <li><a routerLink="/geofencing/supervision" (click)="isMobileMenuOpen = false">Supervision &
+                                Stats</a></li>
+                    </ul>
+                </li>
+
+                <!-- Educational Dropdown -->
+                <li class="dropdown" [class.active]="activeDropdown === 'educational'"
+                    (click)="toggleDropdown('educational')">
+                    <a class="nav-link" [class.active]="activeDropdown === 'educational'">
+                        EDUCATIONAL <i class="fa-solid fa-chevron-down caret"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a routerLink="/educational/activities" (click)="isMobileMenuOpen = false">Activities &
+                                Content</a></li>
+                        <li><a routerLink="/educational/events" (click)="isMobileMenuOpen = false">Events & Calendar</a>
+                        </li>
+                        <li><a routerLink="/educational/tracking" (click)="isMobileMenuOpen = false">Progress
+                                Tracking</a></li>
+                    </ul>
+                </li>
+
+                <!-- Communication Dropdown -->
+                <li class="dropdown" [class.active]="activeDropdown === 'communication'"
+                    (click)="toggleDropdown('communication')">
+                    <a class="nav-link" [class.active]="activeDropdown === 'communication'">
+                        COMMUNICATION <i class="fa-solid fa-chevron-down caret"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a routerLink="/communication/messaging" (click)="isMobileMenuOpen = false">Messaging &
+                                Feed</a></li>
+                        <li><a routerLink="/communication/groups" (click)="isMobileMenuOpen = false">Groups &
+                                Support</a></li>
+                        <li><a routerLink="/communication/admin" (click)="isMobileMenuOpen = false">Moderation</a></li>
+                    </ul>
+                </li>
+
+                <!-- Medical Dropdown -->
+                <li class="dropdown" [class.active]="activeDropdown === 'medical'" (click)="toggleDropdown('medical')">
+                    <a class="nav-link" [class.active]="activeDropdown === 'medical'">
+                        MEDICAL FOLLOW-UP <i class="fa-solid fa-chevron-down caret"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a routerLink="/medical/detection" (click)="isMobileMenuOpen = false">Disease Detection</a>
+                        </li>
+                        <li><a routerLink="/medical/records" (click)="isMobileMenuOpen = false">Medical Records</a></li>
+                        <li><a routerLink="/medical/follow-up" (click)="isMobileMenuOpen = false">Follow-up</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="#" class="nav-link" (click)="isMobileMenuOpen = false">CONTACT US</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="header-actions">
+            <!-- Simplified actions: Search, Appointment -->
+            <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <a href="#" class="btn btn-primary appointment-btn">APPOINTMENT</a>
+            <button class="mobile-toggle" (click)="toggleMobileMenu()">
+                <i class="fa-solid" [class.fa-bars]="!isMobileMenuOpen" [class.fa-xmark]="isMobileMenuOpen"></i>
+            </button>
+        </div>
+    </div>
+</header>

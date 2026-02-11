@@ -1,0 +1,122 @@
+/* Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Amatic+SC:wght@400;700&display=swap');
+
+:root {
+  /* Modern Color Palette */
+  --primary-color: #55c57a;
+  /* Vibrant green */
+  --primary-dark: #44a063;
+  --secondary-color: #2e3a59;
+  /* Dark blue/grey */
+  --accent-color: #fdd835;
+  /* Yellow accent */
+  --accent-green: #9acd32;
+  /* Yellow-green */
+
+  /* Text Colors */
+  --text-color: #555555;
+  --heading-color: #333333;
+  --text-light: #666666;
+
+  /* Background Colors */
+  --bg-light: #f9f9f9;
+  --bg-cream: #fafbf6;
+  --white: #ffffff;
+
+  /* Typography */
+  --font-family-base: 'Poppins', sans-serif;
+  --font-family-heading: 'Playfair Display', serif;
+  --font-family-display: 'Amatic SC', cursive;
+
+  /* Spacing & Effects */
+  --border-radius: 8px;
+  --border-radius-lg: 20px;
+  --transition-speed: 0.3s;
+  --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family-base);
+  color: var(--text-color);
+  background-color: var(--white);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--heading-color);
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-family: var(--font-family-heading);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition-speed);
+}
+
+ul {
+  list-style: none;
+}
+
+button,
+.btn {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: var(--transition-smooth);
+}
+
+/* Utility Classes */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--white);
+  padding: 12px 32px;
+  border-radius: 50px;
+  font-weight: 600;
+  border: 2px solid var(--primary-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.9rem;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.section-padding {
+  padding: 100px 0;
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}

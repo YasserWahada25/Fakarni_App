@@ -1,0 +1,105 @@
+<div class="alerts-container">
+    <div class="alerts-section">
+        <div class="section-header">
+            <h2><i class="fa-solid fa-clock-rotate-left"></i> Alerts History</h2>
+            <div class="filters">
+                <select [(ngModel)]="filterType" (change)="applyFilters()">
+                    <option value="All">All Types</option>
+                    <option value="Zone Exit">Zone Exit</option>
+                    <option value="Abnormal Movement">Abnormal Movement</option>
+                    <option value="Low Battery">Low Battery</option>
+                </select>
+                <select [(ngModel)]="filterStatus" (change)="applyFilters()">
+                    <option value="All">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Resolved">Resolved</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="alerts-table">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Patient</th>
+                        <th>Type</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let alert of filteredAlerts" [class.active-row]="alert.status === 'Active'">
+                        <td>
+                            <span class="status-indicator" [ngClass]="alert.status.toLowerCase()">{{ alert.status
+                                }}</span>
+                        </td>
+                        <td>{{ alert.patientName }}</td>
+                        <td>
+                            <span class="type-badge" [class.danger]="alert.severity === 'High'"
+                                [class.warning]="alert.severity === 'Medium'">
+                                {{ alert.type }}
+                            </span>
+                        </td>
+                        <td>{{ alert.timestamp | date:'medium' }}</td>
+                        <td>
+                            <button *ngIf="alert.status === 'Active'" class="resolve-btn" (click)="resolveAlert(alert)">
+                                <i class="fa-solid fa-check"></i> Resolve
+                            </button>
+                            <span *ngIf="alert.status === 'Resolved'" class="resolved-text"><i
+                                    class="fa-solid fa-check-double"></i> Done</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="settings-section">
+        <h2><i class="fa-solid fa-bell"></i> Notification Settings</h2>
+
+        <div class="setting-group">
+            <label class="switch-label">
+                <span><i class="fa-solid fa-comment-sms"></i> SMS Alerts</span>
+                <input type="checkbox" [(ngModel)]="settings.smsEnabled">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="setting-group">
+            <label class="switch-label">
+                <span><i class="fa-solid fa-envelope"></i> Email Alerts</span>
+                <input type="checkbox" [(ngModel)]="settings.emailEnabled">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="setting-group">
+            <label class="switch-label">
+                <span><i class="fa-solid fa-mobile-screen"></i> Push Notifications</span>
+                <input type="checkbox" [(ngModel)]="settings.pushEnabled">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="input-group">
+            <label>Emergency Contact Number</label>
+            <input type="text" [(ngModel)]="settings.emergencyContact">
+        </div>
+
+        <button class="save-btn" (click)="saveSettings()">Save Preferences</button>
+
+        <div class="timeline-preview">
+            <h3>Recent Activity</h3>
+            <div class="timeline">
+                <div class="timeline-item" *ngFor="let alert of alerts | slice:0:3">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="time">{{ alert.timestamp | date:'shortTime' }}</span>
+                        <p>{{ alert.type }} - {{ alert.patientName }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

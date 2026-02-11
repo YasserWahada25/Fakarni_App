@@ -1,0 +1,31 @@
+<div class="settings-container">
+    <h2>Notifications & Reminders</h2>
+    <p class="subtitle">Manage how you want to be notified about your sessions.</p>
+
+    <div class="settings-list">
+        <div class="setting-item" *ngFor="let pref of preferences">
+            <div class="setting-info">
+                <label [for]="pref.id">{{ pref.label }}</label>
+            </div>
+
+            <div class="setting-control" [ngSwitch]="pref.type">
+
+                <!-- Toggle Switch -->
+                <label class="switch" *ngSwitchCase="'toggle'">
+                    <input type="checkbox" [id]="pref.id" [(ngModel)]="pref.enabled">
+                    <span class="slider round"></span>
+                </label>
+
+                <!-- Select Dropdown -->
+                <select *ngSwitchCase="'select'" [id]="pref.id" [(ngModel)]="pref.frequency" [disabled]="!pref.enabled">
+                    <option *ngFor="let opt of reminderOptions" [value]="opt.value">{{ opt.label }}</option>
+                </select>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="save-actions">
+        <button class="save-btn" (click)="saveSettings()">Save Preferences</button>
+    </div>
+</div>

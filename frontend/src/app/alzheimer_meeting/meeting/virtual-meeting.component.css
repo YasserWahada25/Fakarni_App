@@ -1,0 +1,101 @@
+.meeting-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background-color: #202124;
+    /* Dark theme for meetings */
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    /* Above everything */
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.meeting-header {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent); */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.meeting-header h2 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.recording-indicator {
+    color: #e74c3c;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 12px;
+    border-radius: 4px;
+}
+
+.recording-indicator i {
+    font-size: 0.6rem;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.meeting-sidebar {
+    width: 360px;
+    background: white;
+    /* Light theme sidebar for readability */
+    color: #333;
+    border-left: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+    .meeting-sidebar {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        /* Full width on mobile */
+        z-index: 20;
+    }
+
+    .main-content.sidebar-open {
+        display: none;
+        /* Hide video when chat is open on mobile? or just overlay */
+    }
+}
