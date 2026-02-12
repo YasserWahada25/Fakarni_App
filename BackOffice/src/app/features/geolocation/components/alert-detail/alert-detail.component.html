@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>Détails de l'Alerte</h2>
+
+<mat-dialog-content>
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title>{{alert.patientName}}</mat-card-title>
+            <mat-card-subtitle>{{alert.timestamp | date:'dd/MM/yyyy HH:mm:ss'}}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Type d'alerte:</strong>
+                    <span>{{alert.type}}</span>
+                </div>
+                <div class="info-item" *ngIf="alert.zoneName">
+                    <strong>Zone concernée:</strong>
+                    <span>{{alert.zoneName}}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Statut:</strong>
+                    <span class="status-badge" [ngClass]="alert.status">{{alert.status}}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Actions prises:</strong>
+                    <mat-chip-set>
+                        <mat-chip *ngFor="let action of alert.actionsTaken">{{action}}</mat-chip>
+                    </mat-chip-set>
+                </div>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Notes</mat-label>
+                <textarea matInput [(ngModel)]="notes" rows="4" placeholder="Ajouter des notes..."></textarea>
+            </mat-form-field>
+        </mat-card-content>
+    </mat-card>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="close()">Fermer</button>
+    <button mat-button color="warn" (click)="markAsIgnored()" *ngIf="alert.status !== 'ignored'">Ignorer</button>
+    <button mat-raised-button color="primary" (click)="markAsResolved()" *ngIf="alert.status !== 'resolved'">
+        Marquer comme Résolue
+    </button>
+</mat-dialog-actions>

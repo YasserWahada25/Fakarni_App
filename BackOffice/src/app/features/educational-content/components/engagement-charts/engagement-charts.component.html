@@ -1,0 +1,31 @@
+<div class="charts-container" *ngIf="statistics">
+    <div class="chart-section">
+        <h3>Engagement par Type d'Activité</h3>
+        <div class="bar-chart">
+            <div class="bar-row" *ngFor="let entry of statistics.engagementByType | keyvalue">
+                <div class="label">{{entry.key === 'quiz' ? 'Quiz' : entry.key === 'cognitive_game' ? 'Jeu Cognitif' :
+                    'Vidéo'}}</div>
+                <div class="bar-wrapper">
+                    <div class="bar" [style.width.%]="(entry.value / getEngagementMax()) * 100" [ngClass]="entry.key">
+                        <span class="value">{{entry.value}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h3>Distribution des Participations</h3>
+        <div class="pie-placeholder">
+            <div class="segment" *ngFor="let item of statistics.participationDistribution" [style.flex]="item.count"
+                [ngClass]="item.status" [matTooltip]="item.status + ': ' + item.count">
+            </div>
+        </div>
+        <div class="legend">
+            <div class="legend-item"><span class="dot completed"></span> Terminé</div>
+            <div class="legend-item"><span class="dot in-progress"></span> En cours</div>
+            <div class="legend-item"><span class="dot not-started"></span> Non commencé</div>
+            <div class="legend-item"><span class="dot abandoned"></span> Abandonné</div>
+        </div>
+    </div>
+</div>

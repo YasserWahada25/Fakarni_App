@@ -1,0 +1,61 @@
+.event-list-container {
+    padding: 20px;
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+
+        h2 {
+            color: #006400;
+            margin: 0;
+        }
+    }
+
+    .search-field {
+        width: 100%;
+        max-width: 400px;
+        margin-bottom: 20px;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .description {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 4px;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+
+        &.scheduled {
+            background-color: #FF9800;
+            color: white;
+        }
+
+        &.ongoing {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        &.completed {
+            background-color: #9E9E9E;
+            color: white;
+        }
+
+        &.cancelled {
+            background-color: #F44336;
+            color: white;
+        }
+    }
+}
