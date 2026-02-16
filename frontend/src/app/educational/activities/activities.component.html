@@ -1,0 +1,19 @@
+<div class="activities-container">
+    <h2><i class="fa-solid fa-shapes"></i> Educational Activities</h2>
+
+    <div class="activity-grid">
+        <div class="activity-card" *ngFor="let activity of activities" (click)="startActivity(activity)">
+            <div class="icon-wrapper">
+                <i class="fa-solid" [ngClass]="activity.icon"></i>
+            </div>
+            <div class="activity-info">
+                <h3>{{ activity.title }}</h3>
+                <p class="type">{{ activity.type | titlecase }}</p>
+                <div class="progress-indicator" *ngIf="activity.score !== null">
+                    <span class="score">Score: {{ activity.score }}%</span>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+        </div>
+    </div>
+</div>

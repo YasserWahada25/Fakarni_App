@@ -1,0 +1,279 @@
+/* Modern Navbar Styling */
+:host {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+}
+
+.header {
+    background-color: var(--white);
+    box-shadow: var(--shadow-sm);
+    border-bottom: 1px solid var(--bg-secondary);
+    padding: 0;
+    position: relative;
+    width: 100%;
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    /* Ensuring modern font */
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+    padding: 0 20px;
+    max-width: 95%;
+    /* Use percentage or wider max-width to fit content */
+    margin: 0 auto;
+}
+
+/* Logo Section */
+.logo a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    height: 68px;
+    /* Slightly smaller logo */
+    width: auto;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-name {
+    font-size: 1.1rem;
+    /* Slightly smaller */
+    font-weight: 700;
+    color: var(--primary-dark);
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+}
+
+.tagline {
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* Navigation Menu */
+.nav-menu ul {
+    display: flex;
+    gap: 15px;
+    /* Reduced gap to fit items */
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 0.85rem;
+    /* Smaller font for better fit */
+    padding: 8px 0;
+    transition: color 0.3s ease, border-bottom 0.3s ease;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    /* Prevent text wrapping */
+}
+
+.nav-link:hover,
+.nav-link.active,
+.nav-link.active-route {
+    color: var(--primary-color);
+}
+
+.nav-link.active-route {
+    border-bottom-color: var(--primary-color);
+}
+
+.caret {
+    font-size: 0.65rem;
+    transition: transform 0.3s;
+}
+
+.dropdown.active .caret {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    display: none;
+    /* Hidden by default */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--white);
+    min-width: 220px;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--border-radius);
+    padding: 10px 0;
+    z-index: 1001;
+    margin-top: 15px;
+    /* Spacing from nav item */
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    border: 1px solid var(--bg-secondary);
+}
+
+/* Show dropdown on hover (desktop) OR when active class is present */
+.dropdown:hover .dropdown-menu,
+.dropdown.active .dropdown-menu {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Styling for dropdown items */
+.dropdown-menu li {
+    display: block;
+    margin: 0;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px 20px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background 0.2s, color 0.2s;
+    font-weight: 500;
+}
+
+.dropdown-menu a:hover {
+    background-color: var(--bg-main);
+    color: var(--primary-hover);
+    padding-left: 25px;
+    /* Subtle slide effect */
+}
+
+/* Header Actions */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.search-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.search-btn:hover {
+    color: var(--primary-color);
+}
+
+.appointment-btn {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(160, 132, 220, 0.3);
+    transition: transform 0.2s, background 0.2s;
+}
+
+.appointment-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #333;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .mobile-toggle {
+        display: block;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 80px;
+        right: -100%;
+        width: 100%;
+        height: calc(100vh - 80px);
+        /* Full height minus header */
+        background: var(--white);
+        transition: right 0.3s ease;
+        padding: 20px;
+        box-shadow: -5px 10px 20px rgba(0, 0, 0, 0.05);
+        overflow-y: auto;
+    }
+
+    .nav-menu.open {
+        right: 0;
+    }
+
+    .nav-menu ul {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+    }
+
+    .nav-menu li {
+        width: 100%;
+        border-bottom: 1px solid var(--bg-secondary);
+    }
+
+    .nav-link {
+        padding: 15px 0;
+        justify-content: space-between;
+        /* Arrow stays right */
+        width: 100%;
+    }
+
+    .dropdown-menu {
+        position: static;
+        /* Stack in mobile flow */
+        box-shadow: none;
+        margin-top: 0;
+        padding-left: 15px;
+        background-color: var(--bg-main);
+        display: none;
+        /* JS toggles active class to show */
+        width: 100%;
+        opacity: 1;
+        /* Reset opacity for toggle */
+        transform: none;
+    }
+
+    .dropdown.active .dropdown-menu {
+        display: block;
+    }
+
+    .appointment-btn {
+        display: none;
+        /* Hide button on mobile if needed, or move to menu */
+    }
+}

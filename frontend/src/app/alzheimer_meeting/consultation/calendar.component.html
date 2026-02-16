@@ -1,0 +1,34 @@
+<div class="calendar-container">
+    <div class="calendar-header">
+        <button (click)="previousMonth()" class="nav-btn">&lt;</button>
+        <h2>{{ currentMonth | date:'MMMM yyyy' }}</h2>
+        <button (click)="nextMonth()" class="nav-btn">&gt;</button>
+    </div>
+
+    <div class="weekdays">
+        <div *ngFor="let day of weekDays" class="weekday">{{ day }}</div>
+    </div>
+
+    <div class="days-grid">
+        <div *ngFor="let day of calendarDays" class="day-cell"
+            [class.not-current-month]="day.getMonth() !== currentMonth.getMonth()"
+            [class.today]="day.toDateString() === (currentMonth | date:'mediumDate')"> <!-- simple check for demo -->
+
+            <span class="day-number">{{ day | date:'d' }}</span>
+
+            <div class="events-list">
+                <div *ngFor="let session of getSessionsForDay(day)" class="event-pill"
+                    [class.favorite]="session.isFavorite" (click)="selectSession(session); $event.stopPropagation()">
+                    <span class="event-title">{{ session.title }}</span>
+                    <button class="fav-btn" (click)="toggleFavorite(session); $event.stopPropagation()">
+                        {{ session.isFavorite ? '★' : '☆' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <app-session-detail *ngIf="selectedSession" [session]="selectedSession" (close)="closeDetail()"
+        (toggleFavorite)="toggleFavorite(selectedSession!)">
+    </app-session-detail>
+</div>

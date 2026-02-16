@@ -1,0 +1,28 @@
+<div class="favorites-container">
+    <div class="header-section">
+        <h2>My Favorite Sessions</h2>
+        <p>Access your saved sessions quickly.</p>
+    </div>
+
+    <div *ngIf="favoriteSessions.length === 0" class="empty-state">
+        <i class="fa-regular fa-star"></i>
+        <p>No favorite sessions yet. Go to the calendar to add some!</p>
+    </div>
+
+    <div class="favorites-grid">
+        <div *ngFor="let session of favoriteSessions" class="fav-card">
+            <div class="fav-header">
+                <span class="type-badge">{{ session.type }}</span>
+                <button class="remove-btn" (click)="removeFavorite(session.id)" title="Remove from favorites">
+                    <i class="fa-solid fa-star"></i>
+                </button>
+            </div>
+            <h3>{{ session.title }}</h3>
+            <div class="fav-meta">
+                <p><i class="fa-regular fa-calendar"></i> {{ session.date | date:'fullDate' }}</p>
+                <p *ngIf="session.time"><i class="fa-regular fa-clock"></i> {{ session.time }}</p>
+            </div>
+            <p class="desc">{{ session.description }}</p>
+        </div>
+    </div>
+</div>

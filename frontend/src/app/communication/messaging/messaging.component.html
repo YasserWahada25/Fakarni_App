@@ -1,0 +1,66 @@
+<div class="messaging-container">
+    <header class="page-header">
+        <div class="tabs">
+            <button [class.active]="activeTab === 'chat'" (click)="activeTab = 'chat'">
+                <i class="fa-solid fa-comments"></i> Chat
+            </button>
+            <button [class.active]="activeTab === 'feed'" (click)="activeTab = 'feed'">
+                <i class="fa-solid fa-newspaper"></i> Feed
+            </button>
+        </div>
+    </header>
+
+    <!-- Chat Interface -->
+    <div class="chat-interface" *ngIf="activeTab === 'chat'">
+        <div class="contacts-list">
+            <div class="contact" *ngFor="let contact of contacts">
+                <div class="avatar"><i class="fa-solid" [ngClass]="contact.avatar"></i></div>
+                <div class="info">
+                    <h4>{{ contact.name }}</h4>
+                    <span class="status" [ngClass]="contact.status">{{ contact.status }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="chat-area">
+            <div class="messages">
+                <div class="message" *ngFor="let msg of messages" [class.self]="msg.self">
+                    <div class="msg-content">
+                        <p>{{ msg.text }}</p>
+                        <span class="time">{{ msg.time }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="input-area">
+                <input type="text" placeholder="Type a message...">
+                <button class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                <button class="icon-btn"><i class="fa-solid fa-microphone"></i></button>
+                <button class="icon-btn"><i class="fa-solid fa-video"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feed Interface -->
+    <div class="feed-interface" *ngIf="activeTab === 'feed'">
+        <div class="create-post">
+            <input type="text" placeholder="Share something...">
+            <button>Post</button>
+        </div>
+        <div class="posts">
+            <div class="post-card" *ngFor="let post of posts">
+                <div class="post-header">
+                    <i class="fa-solid fa-user-circle"></i>
+                    <div>
+                        <h4>{{ post.author }}</h4>
+                        <span>{{ post.date }}</span>
+                    </div>
+                </div>
+                <h3>{{ post.title }}</h3>
+                <p>{{ post.content }}</p>
+                <div class="post-actions">
+                    <button><i class="fa-regular fa-thumbs-up"></i> Like</button>
+                    <button><i class="fa-regular fa-comment"></i> Comment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

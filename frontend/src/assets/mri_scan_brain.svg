@@ -1,0 +1,6 @@
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#000" />
+  <circle cx="200" cy="200" r="150" stroke="#444" stroke-width="2" fill="none" />
+  <path d="M150 150 Q200 100 250 150 T350 250" stroke="#ccc" stroke-width="2" fill="none" />
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#fff" font-family="Arial" font-size="24">MRI SCAN PLACEHOLDER</text>
+</svg>
