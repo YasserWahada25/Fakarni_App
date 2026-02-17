@@ -1,11 +1,12 @@
 package tn.SoftCare.User.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import tn.SoftCare.User.dto.CreateUserRequest;
 import tn.SoftCare.User.dto.UpdateUserRequest;
 import tn.SoftCare.User.dto.UserResponse;
 import tn.SoftCare.User.model.User;
 import tn.SoftCare.User.repository.UserRepository;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -13,9 +14,11 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserResponse create(CreateUserRequest req) {
@@ -27,7 +30,7 @@ public class UserService {
         u.setNom(req.getNom());
         u.setPrenom(req.getPrenom());
         u.setEmail(req.getEmail());
-        u.setPassword(req.getPassword()); // (plus tard on hash)
+        u.setPassword(passwordEncoder.encode(req.getPassword())); // ✅ hash
         u.setRole(req.getRole());
         u.setNumTel(req.getNumTel());
         u.setAdresse(req.getAdresse());
@@ -58,15 +61,28 @@ public class UserService {
 
         if (req.getNom() != null) u.setNom(req.getNom());
         if (req.getPrenom() != null) u.setPrenom(req.getPrenom());
-        if (req.getPassword() != null && !req.getPassword().isBlank()) u.setPassword(req.getPassword());
         if (req.getRole() != null) u.setRole(req.getRole());
         if (req.getNumTel() != null) u.setNumTel(req.getNumTel());
         if (req.getAdresse() != null) u.setAdresse(req.getAdresse());
 
+        // ⚠️ update password via endpoint dédié (plus safe)
+        // (on ne change pas le password ici)
+
         return toResponse(userRepository.save(u));
     }
 
+    // ✅ endpoint interne pour reset-password
+    public void updatePassword(String userId, String rawPassword) {
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User introuvable"));
+        u.setPassword(passwordEncoder.encode(rawPassword));
+        userRepository.save(u);
+    }
+
     public void delete(String id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User introuvable");
+        }
         userRepository.deleteById(id);
     }
 
