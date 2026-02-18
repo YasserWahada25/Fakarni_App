@@ -6,6 +6,8 @@
       <list>
         <option value="$PROJECT_DIR$/session-service/pom.xml" />
         <option value="$PROJECT_DIR$/meeting-insights-service/pom.xml" />
+        <option value="$PROJECT_DIR$/Eureka-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Gateway-Service/pom.xml" />
       </list>
     </option>
   </component>

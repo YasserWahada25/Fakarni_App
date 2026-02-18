@@ -1,10 +1,10 @@
-package tn.SoftCare.Discovery_Service;
+package com.alzheimer.Gateway_Service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class DiscoveryServiceApplicationTests {
+class GatewayServiceApplicationTests {
 
 	@Test
 	void contextLoads() {

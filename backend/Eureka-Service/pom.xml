@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.alzheimer</groupId>
-	<artifactId>Gateway-Service</artifactId>
+	<artifactId>Eureka-Service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Gateway-Service</name>
+	<name>Eureka-Service</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
@@ -31,16 +31,9 @@
 		<spring-cloud.version>2025.1.0</spring-cloud.version>
 	</properties>
 	<dependencies>
-
-
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
 		</dependency>
 
 		<dependency>

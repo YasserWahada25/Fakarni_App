@@ -1,10 +1,10 @@
-package tn.SoftCare.Gateway_Service;
+package com.alzheimer.Eureka_Service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class GatewayServiceApplicationTests {
+class EurekaServiceApplicationTests {
 
 	@Test
 	void contextLoads() {
