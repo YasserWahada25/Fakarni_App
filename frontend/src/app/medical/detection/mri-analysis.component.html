@@ -1,85 +1,226 @@
 <div class="mri-container">
-    <div class="analysis-header">
-        <h1><i class="fa-solid fa-brain"></i> AI Disease Detection</h1>
-        <p>Upload MRI scans for automated analysis and anomaly detection.</p>
+  <div class="analysis-header">
+    <h1><i class="fa-solid fa-brain"></i> AI Disease Detection</h1>
+    <p>Upload MRI scans for automated analysis and anomaly detection.</p>
+  </div>
+
+  <div class="workspace">
+
+    <!-- ══════════════════════════════════════════ -->
+    <!--             IMAGE VIEWER                  -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="image-viewer-card">
+
+      <!-- Bouton upload VISIBLE avec styles inline -->
+      <div class="upload-section" style="
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        text-align: center;
+      ">
+        <label for="mriUpload" style="
+          display: inline-block;
+          padding: 14px 32px;
+          background: white;
+          color: #667eea;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 16px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          transition: all 0.3s;
+        " 
+        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.2)'"
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'">
+          <i class="fa-solid fa-upload"></i> Select MRI Image
+        </label>
+        
+        <input 
+          id="mriUpload" 
+          type="file" 
+          accept="image/*"
+          (change)="onFileSelected($event)" 
+          style="display: none;">
+        
+        <div *ngIf="selectedFile" style="
+          margin-top: 12px;
+          color: white;
+          font-weight: 500;
+          background: rgba(255,255,255,0.2);
+          padding: 8px 16px;
+          border-radius: 6px;
+          display: inline-block;
+        ">
+          <i class="fa-solid fa-check-circle"></i> {{ selectedFile.name }}
+        </div>
+      </div>
+
+      <!-- Contrôles zoom -->
+      <div class="viewer-controls">
+        <button (click)="zoomIn()" title="Zoom In">
+          <i class="fa-solid fa-magnifying-glass-plus"></i>
+        </button>
+        <button (click)="zoomOut()" title="Zoom Out">
+          <i class="fa-solid fa-magnifying-glass-minus"></i>
+        </button>
+        <button (click)="zoom=1; panX=0; panY=0" title="Reset">
+          <i class="fa-solid fa-compress"></i>
+        </button>
+      </div>
+
+      <!-- Viewport image -->
+      <div class="viewport"
+        (mousedown)="startDrag($event)" 
+        (mousemove)="drag($event)"
+        (mouseup)="endDrag()" 
+        (mouseleave)="endDrag()">
+        <div class="image-wrapper"
+          [style.transform]="'translate(' + panX + 'px, ' + panY + 'px) scale(' + zoom + ')'">
+          
+          <!-- Image uploadée -->
+          <img 
+            *ngIf="imageUrl" 
+            [src]="imageUrl" 
+            alt="MRI Scan" 
+            draggable="false">
+          
+          <!-- Placeholder si pas d'image -->
+          <div *ngIf="!imageUrl" class="no-image">
+            <i class="fa-solid fa-brain"></i>
+            <p>No image selected</p>
+          </div>
+
+          <!-- Overlay AI après analyse -->
+          <div *ngIf="analysisComplete" class="ai-overlay">
+            <div class="annotation" 
+              style="top: 40%; left: 45%; width: 50px; height: 50px;"
+              [style.border-color]="getRiskColor(analyseResult?.couleurRisque || '')">
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="workspace">
-        <!-- Image Viewer -->
-        <div class="image-viewer-card">
-            <div class="viewer-controls">
-                <button (click)="zoomIn()" title="Zoom In"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
-                <button (click)="zoomOut()" title="Zoom Out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
-                <button (click)="zoom=1; panX=0; panY=0" title="Reset"><i class="fa-solid fa-compress"></i></button>
-            </div>
+    <!-- ══════════════════════════════════════════ -->
+    <!--           ANALYSIS PANEL                  -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="report-card">
+      
+      <div class="card-header">
+        <h3>Analysis Report</h3>
+        <span class="status-badge"
+          [class.analyzing]="isAnalyzing"
+          [class.complete]="analysisComplete">
+          {{ isAnalyzing ? 'Processing...' : (analysisComplete ? 'Completed' : 'Ready') }}
+        </span>
+      </div>
 
-            <div class="viewport" (mousedown)="startDrag($event)" (mousemove)="drag($event)" (mouseup)="endDrag()"
-                (mouseleave)="endDrag()">
-                <div class="image-wrapper"
-                    [style.transform]="'translate(' + panX + 'px, ' + panY + 'px) scale(' + zoom + ')'">
-                    <img src="" alt="MRI Scan" draggable="false">
+      <div class="card-body">
 
-                    <!-- Mock AI Overlay (Visible only after analysis) -->
-                    <div *ngIf="analysisComplete" class="ai-overlay">
-                        <div class="annotation" style="top: 40%; left: 45%; width: 50px; height: 50px;"></div>
-                    </div>
-                </div>
-            </div>
+        <!-- ── État initial ── -->
+        <div *ngIf="!isAnalyzing && !analysisComplete" class="empty-state">
+          <i class="fa-solid fa-microscope"></i>
+          <p>{{ selectedFile ? 'Image ready. Click Start Analysis.' : 'No analysis performed yet.' }}</p>
+          
+          <button 
+            class="btn-primary" 
+            (click)="runAIAnalysis()" 
+            [disabled]="!selectedFile">
+            Start AI Analysis
+          </button>
+
+          <p *ngIf="errorMessage" class="error-msg">
+            <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMessage }}
+          </p>
         </div>
 
-        <!-- Analysis Panel -->
-        <div class="report-card">
-            <div class="card-header">
-                <h3>Analysis Report</h3>
-                <span class="status-badge" [class.analyzing]="isAnalyzing" [class.complete]="analysisComplete">
-                    {{ isAnalyzing ? 'Processing...' : (analysisComplete ? 'Completed' : 'Ready') }}
-                </span>
-            </div>
-
-            <div class="card-body">
-                <div *ngIf="!isAnalyzing && !analysisComplete" class="empty-state">
-                    <i class="fa-solid fa-microscope"></i>
-                    <p>No analysis performed yet.</p>
-                    <button class="btn-primary" (click)="runAIAnalysis()">
-                        Start AI Analysis
-                    </button>
-                </div>
-
-                <div *ngIf="isAnalyzing" class="loading-state">
-                    <div class="spinner"></div>
-                    <p>AI is scanning for anomalies...</p>
-                </div>
-
-                <div *ngIf="analysisComplete" class="results-state">
-                    <div class="summary-box">
-                        <span class="label">Detection Confidence</span>
-                        <div class="progress-bar">
-                            <div class="fill" style="width: 92%"></div>
-                        </div>
-                        <span class="value">92%</span>
-                    </div>
-
-                    <h4>Detected Anomalies</h4>
-                    <ul class="findings-list">
-                        <li *ngFor="let item of results" [class]="item.severity.toLowerCase()">
-                            <div class="finding-header">
-                                <span class="region">{{ item.region }}</span>
-                                <span class="tag">{{ item.severity }} priority</span>
-                            </div>
-                            <p>{{ item.description }}</p>
-                        </li>
-                    </ul>
-
-                    <div class="recommendations">
-                        <h4><i class="fa-solid fa-user-doctor"></i> Recommendation</h4>
-                        <p>Schedule a follow-up consultation for detailed neuropsychological assessment.</p>
-                    </div>
-
-                    <button class="btn-outline">
-                        <i class="fa-solid fa-file-pdf"></i> Download Report
-                    </button>
-                </div>
-            </div>
+        <!-- ── Chargement ── -->
+        <div *ngIf="isAnalyzing" class="loading-state">
+          <div class="spinner"></div>
+          <p>AI is scanning for anomalies...</p>
         </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!--      ✅ RÉSULTATS DEPUIS API              -->
+        <!-- ══════════════════════════════════════════ -->
+        <div *ngIf="analysisComplete && analyseResult" class="results-state">
+
+          <!-- Diagnostic principal -->
+          <div class="diagnosis-banner"
+            [style.border-left-color]="getRiskColor(analyseResult.couleurRisque)">
+            <div class="diagnosis-main">
+              <span class="diag-label">Diagnosis</span>
+              <span class="diag-value">
+                {{ formatPrediction(analyseResult.prediction) }}
+              </span>
+            </div>
+            <span class="risk-tag"
+              [style.background-color]="getRiskColor(analyseResult.couleurRisque)">
+              {{ analyseResult.niveauRisque }}
+            </span>
+          </div>
+
+          <!-- Barre de confiance -->
+          <div class="summary-box">
+            <span class="label">Detection Confidence</span>
+            <div class="progress-bar">
+              <div class="fill"
+                [style.width]="analyseResult.confidence + '%'"
+                [style.background-color]="getRiskColor(analyseResult.couleurRisque)">
+              </div>
+            </div>
+            <span class="value">{{ analyseResult.confidence | number:'1.1-1' }}%</span>
+          </div>
+
+          <!-- Description -->
+          <p class="description-text">
+            <i class="fa-solid fa-circle-info"></i>
+            {{ analyseResult.descriptionRisque }}
+          </p>
+
+          <!-- Probabilités détaillées -->
+          <h4>Detected Anomalies</h4>
+          <ul class="findings-list">
+            <li>
+              <div class="finding-header">
+                <span class="region">Non Demented</span>
+                <span class="tag">{{ analyseResult.probNonDemented | number:'1.1-2' }}%</span>
+              </div>
+            </li>
+            <li>
+              <div class="finding-header">
+                <span class="region">Very Mild Demented</span>
+                <span class="tag">{{ analyseResult.probVeryMildDemented | number:'1.1-2' }}%</span>
+              </div>
+            </li>
+            <li>
+              <div class="finding-header">
+                <span class="region">Mild Demented</span>
+                <span class="tag">{{ analyseResult.probMildDemented | number:'1.1-2' }}%</span>
+              </div>
+            </li>
+            <li>
+              <div class="finding-header">
+                <span class="region">Moderate Demented</span>
+                <span class="tag">{{ analyseResult.probModerateDemented | number:'1.1-2' }}%</span>
+              </div>
+            </li>
+          </ul>
+
+          <!-- Recommandation -->
+          <div class="recommendations">
+            <h4><i class="fa-solid fa-user-doctor"></i> Recommendation</h4>
+            <p>Schedule a follow-up consultation for detailed neuropsychological assessment.</p>
+          </div>
+
+          <!-- Actions -->
+          <button class="btn-outline" (click)="resetAnalysis()">
+            <i class="fa-solid fa-plus"></i> New Analysis
+          </button>
+        </div>
+
+      </div>
     </div>
+  </div>
 </div>

@@ -6,10 +6,15 @@
       <list>
         <option value="$PROJECT_DIR$/session-service/pom.xml" />
         <option value="$PROJECT_DIR$/meeting-insights-service/pom.xml" />
+        <option value="$PROJECT_DIR$/Detection_Maladie-Service/Détection_Maladie-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Dossier_Medical-service/Dossier_Médical-service/pom.xml" />
+        <option value="$PROJECT_DIR$/Detection_Maladie-Service/Detection_Maladie-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Dossier_Medical-service/Dossier_Medical-service/pom.xml" />
+        <option value="$PROJECT_DIR$/Gateway-Service/pom.xml" />
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_22" default="true" project-jdk-name="corretto-17" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="corretto-17" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: Gateway-Service
+
+  cloud:
+    config:
+      enabled: false
+
+    gateway:
+      # ═══════════════════════════════════
+      #            ROUTES
+      # ═══════════════════════════════════
+      routes:
+
+        # Detection_Maladie-Service :8058
+        - id: detection-service
+          uri: http://localhost:8058
+          predicates:
+            - Path=/api/detection/**
+
+        # Dossier_Medical-Service :8059
+        - id: dossier-medical-service
+          uri: http://localhost:8059
+          predicates:
+            - Path=/api/dossiers/**
+
+      # ═══════════════════════════════════
+      #         CORS pour Angular :4200
+      # ═══════════════════════════════════
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:4200"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+# Désactiver Eureka (pas encore utilisé)
+eureka:
+  client:
+    enabled: false
