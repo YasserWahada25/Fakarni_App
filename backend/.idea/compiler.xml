@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
+<<<<<<< HEAD
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
       <profile name="Annotation profile for session-service" enabled="true">
@@ -37,5 +38,11 @@
       <module name="meeting-insights-service" options="-parameters" />
       <module name="session-service" options="-parameters" />
     </option>
+=======
+    <bytecodeTargetLevel>
+      <module name="Discovery-Service" target="21" />
+      <module name="User" target="21" />
+    </bytecodeTargetLevel>
+>>>>>>> 274f2ef73b8e33f2f29e5e97d27b4bd5663315d3
   </component>
 </project>
