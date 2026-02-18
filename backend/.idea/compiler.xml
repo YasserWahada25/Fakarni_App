@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-<<<<<<< HEAD
     <annotationProcessing>
-      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="Eureka-Service" />
+        <module name="Gateway-Service" />
+      </profile>
       <profile name="Annotation profile for session-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -13,36 +18,32 @@
         </processorPath>
         <module name="session-service" />
       </profile>
-      <profile name="Maven default annotation processors profile" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <module name="Eureka-Service" />
-        <module name="Gateway-Service" />
-      </profile>
-      <profile name="Annotation profile for meeting-insights-service" enabled="true">
+      <profile name="Annotation profile for Event-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
+        <module name="Event-Service" />
         <module name="meeting-insights-service" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="Auth-Service" target="21" />
+      <module name="User-Service" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Auth-Service" options="-parameters" />
       <module name="Eureka-Service" options="-parameters" />
+      <module name="Event-Service" options="-parameters" />
       <module name="Gateway-Service" options="-parameters" />
+      <module name="User-Service" options="-parameters" />
       <module name="meeting-insights-service" options="-parameters" />
       <module name="session-service" options="-parameters" />
     </option>
-=======
-    <bytecodeTargetLevel>
-      <module name="Discovery-Service" target="21" />
-      <module name="User" target="21" />
-    </bytecodeTargetLevel>
->>>>>>> 274f2ef73b8e33f2f29e5e97d27b4bd5663315d3
   </component>
 </project>

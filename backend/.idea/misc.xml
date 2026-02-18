@@ -3,17 +3,15 @@
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
-<<<<<<< HEAD
         <option value="$PROJECT_DIR$/session-service/pom.xml" />
         <option value="$PROJECT_DIR$/meeting-insights-service/pom.xml" />
         <option value="$PROJECT_DIR$/Eureka-Service/pom.xml" />
-=======
->>>>>>> 274f2ef73b8e33f2f29e5e97d27b4bd5663315d3
         <option value="$PROJECT_DIR$/Gateway-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Event-Service/pom.xml" />
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="22" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" default="true" project-jdk-name="22" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>
