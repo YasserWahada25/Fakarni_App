@@ -1,8 +1,8 @@
-package com.alzheimer.Post_Service.controllers;
+package com.alzheimer.post_service.controllers;
 
-import com.alzheimer.Post_Service.dto.PostRequest;
-import com.alzheimer.Post_Service.dto.PostResponse;
-import com.alzheimer.Post_Service.services.PostService;
+import com.alzheimer.post_service.dto.PostRequest;
+import com.alzheimer.post_service.dto.PostResponse;
+import com.alzheimer.post_service.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/api/posts")
 public class PostController {
 
     @Autowired

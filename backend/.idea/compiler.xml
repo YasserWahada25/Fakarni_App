@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="Eureka-Service" />
         <module name="Gateway-Service" />
+        <module name="Group-Service" />
         <module name="User-Service" />
       </profile>
       <profile name="Annotation profile for session-service" enabled="true">
@@ -50,6 +51,7 @@
       <module name="Eureka-Service" options="-parameters" />
       <module name="Event-Service" options="-parameters" />
       <module name="Gateway-Service" options="-parameters" />
+      <module name="Group-Service" options="-parameters" />
       <module name="Post-Service" options="-parameters" />
       <module name="User-Service" options="-parameters" />
       <module name="meeting-insights-service" options="-parameters" />

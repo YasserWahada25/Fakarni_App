@@ -1,6 +1,6 @@
-package com.alzheimer.Post_Service.repositories;
+package com.alzheimer.post_service.repositories;
 
-import com.alzheimer.Post_Service.entities.Post;
+import com.alzheimer.post_service.entities.Post;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.alzheimer.Post_Service;
+package com.alzheimer.post_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
