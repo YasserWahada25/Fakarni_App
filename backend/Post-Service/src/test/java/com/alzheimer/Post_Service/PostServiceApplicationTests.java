@@ -1,4 +1,4 @@
-package com.alzheimer.Post_Service;
+package com.alzheimer.post_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

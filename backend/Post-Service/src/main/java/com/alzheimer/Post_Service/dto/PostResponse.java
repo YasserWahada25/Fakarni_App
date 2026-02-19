@@ -1,4 +1,4 @@
-package com.alzheimer.Post_Service.dto;
+package com.alzheimer.post_service.dto;
 
 import java.time.LocalDateTime;
 

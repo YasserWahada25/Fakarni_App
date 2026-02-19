@@ -1,9 +1,9 @@
-package com.alzheimer.Post_Service.services;
+package com.alzheimer.post_service.services;
 
-import com.alzheimer.Post_Service.dto.PostRequest;
-import com.alzheimer.Post_Service.dto.PostResponse;
-import com.alzheimer.Post_Service.entities.Post;
-import com.alzheimer.Post_Service.repositories.PostRepository;
+import com.alzheimer.post_service.dto.PostRequest;
+import com.alzheimer.post_service.dto.PostResponse;
+import com.alzheimer.post_service.entities.Post;
+import com.alzheimer.post_service.repositories.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
