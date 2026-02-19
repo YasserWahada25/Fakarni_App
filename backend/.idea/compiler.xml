@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="Eureka-Service" />
         <module name="Gateway-Service" />
+        <module name="User-Service" />
       </profile>
       <profile name="Annotation profile for session-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -29,10 +30,18 @@
         <module name="Event-Service" />
         <module name="meeting-insights-service" />
       </profile>
+      <profile name="Annotation profile for Post-Service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="Post-Service" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Auth-Service" target="21" />
-      <module name="User-Service" target="21" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -41,6 +50,7 @@
       <module name="Eureka-Service" options="-parameters" />
       <module name="Event-Service" options="-parameters" />
       <module name="Gateway-Service" options="-parameters" />
+      <module name="Post-Service" options="-parameters" />
       <module name="User-Service" options="-parameters" />
       <module name="meeting-insights-service" options="-parameters" />
       <module name="session-service" options="-parameters" />
