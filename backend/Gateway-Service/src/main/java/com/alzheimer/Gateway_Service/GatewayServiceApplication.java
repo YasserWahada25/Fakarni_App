@@ -6,9 +6,11 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 @EnableDiscoveryClient
+
 public class GatewayServiceApplication {
 
 	public static void main(String[] args) {
@@ -18,9 +20,19 @@ public class GatewayServiceApplication {
 	@Bean
 	public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
 		return builder.routes()
+
 				.route("session_service", r -> r.path("/session/**")
 						.uri("lb://SESSION-SERVICE"))
+				.route("Event-Service", r -> r.path("/api/events/**")
+						.uri("lb://EVENT-SERVICE"))
 				.build();
 
+
+
+
+
+
+
 	}
+
 }
