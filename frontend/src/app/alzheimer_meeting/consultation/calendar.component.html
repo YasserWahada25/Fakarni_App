@@ -1,8 +1,12 @@
 <div class="calendar-container">
     <div class="calendar-header">
-        <button (click)="previousMonth()" class="nav-btn">&lt;</button>
+        <button (click)="previousMonth()" class="nav-btn">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
         <h2>{{ currentMonth | date:'MMMM yyyy' }}</h2>
-        <button (click)="nextMonth()" class="nav-btn">&gt;</button>
+        <button (click)="nextMonth()" class="nav-btn">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
     </div>
 
     <div class="weekdays">
@@ -12,15 +16,20 @@
     <div class="days-grid">
         <div *ngFor="let day of calendarDays" class="day-cell"
             [class.not-current-month]="day.getMonth() !== currentMonth.getMonth()"
-            [class.today]="day.toDateString() === (currentMonth | date:'mediumDate')"> <!-- simple check for demo -->
+            [class.today]="isToday(day)"
+            [class.has-sessions]="getSessionsForDay(day).length > 0">
 
-            <span class="day-number">{{ day | date:'d' }}</span>
+            <span class="day-number" [class.today-number]="isToday(day)">{{ day | date:'d' }}</span>
 
             <div class="events-list">
                 <div *ngFor="let session of getSessionsForDay(day)" class="event-pill"
-                    [class.favorite]="session.isFavorite" (click)="selectSession(session); $event.stopPropagation()">
+                    [ngClass]="getSessionTypeClass(session)"
+                    [class.favorite]="session.isFavorite"
+                    (click)="selectSession(session); $event.stopPropagation()">
                     <span class="event-title">{{ session.title }}</span>
-                    <button class="fav-btn" (click)="toggleFavorite(session); $event.stopPropagation()">
+                    <button class="fav-btn" (click)="toggleFavorite(session); $event.stopPropagation()"
+                        [class.is-fav]="session.isFavorite"
+                        [title]="session.isFavorite ? 'Remove from favorites' : 'Add to favorites'">
                         {{ session.isFavorite ? '★' : '☆' }}
                     </button>
                 </div>
@@ -28,7 +37,9 @@
         </div>
     </div>
 
-    <app-session-detail *ngIf="selectedSession" [session]="selectedSession" (close)="closeDetail()"
-        (toggleFavorite)="toggleFavorite(selectedSession!)">
-    </app-session-detail>
+    <div class="detail-panel" *ngIf="selectedSession" @slideIn>
+        <app-session-detail [session]="selectedSession" (close)="closeDetail()"
+            (toggleFavorite)="toggleFavorite(selectedSession!)">
+        </app-session-detail>
+    </div>
 </div>

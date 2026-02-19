@@ -16,6 +16,7 @@ export class CalendarComponent implements OnInit {
     calendarDays: Date[] = [];
     sessions: Session[] = [];
     weekDays: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    today: Date = new Date();
 
     constructor(private alzheimerService: AlzheimerService) { }
 
@@ -37,14 +38,11 @@ export class CalendarComponent implements OnInit {
 
         this.calendarDays = [];
 
-        // Previous month's padding
         for (let i = 0; i < startingDay; i++) {
-            // Correct date calculation for previous month days
             const prevMonthDay = new Date(year, month, -startingDay + 1 + i);
             this.calendarDays.push(prevMonthDay);
         }
 
-        // Current month's days
         for (let i = 1; i <= daysInMonth; i++) {
             this.calendarDays.push(new Date(year, month, i));
         }
@@ -60,12 +58,28 @@ export class CalendarComponent implements OnInit {
         this.generateCalendar();
     }
 
+    isToday(date: Date): boolean {
+        return date.getDate() === this.today.getDate() &&
+            date.getMonth() === this.today.getMonth() &&
+            date.getFullYear() === this.today.getFullYear();
+    }
+
     getSessionsForDay(date: Date): Session[] {
         return this.sessions.filter(s =>
             s.date.getDate() === date.getDate() &&
             s.date.getMonth() === date.getMonth() &&
             s.date.getFullYear() === date.getFullYear()
         );
+    }
+
+    getSessionTypeClass(session: Session): string {
+        switch (session.type?.toLowerCase()) {
+            case 'therapy': return 'type-therapy';
+            case 'cognitive': return 'type-cognitive';
+            case 'physical': return 'type-physical';
+            case 'creative': return 'type-creative';
+            default: return 'type-general';
+        }
     }
 
     toggleFavorite(session: Session): void {
@@ -75,7 +89,7 @@ export class CalendarComponent implements OnInit {
     selectedSession: Session | null = null;
 
     selectSession(session: Session): void {
-        this.selectedSession = session;
+        this.selectedSession = this.selectedSession?.id === session.id ? null : session;
     }
 
     closeDetail(): void {
