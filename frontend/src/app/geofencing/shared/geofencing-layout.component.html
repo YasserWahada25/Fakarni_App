@@ -1,0 +1,44 @@
+<div class="geofencing-layout">
+    <aside class="sidebar" [class.collapsed]="isSidebarCollapsed">
+        <div class="sidebar-header">
+            <h2 *ngIf="!isSidebarCollapsed">Geofencing</h2>
+            <button class="toggle-btn" (click)="toggleSidebar()">
+                <i class="fa-solid" [class.fa-chevron-left]="!isSidebarCollapsed"
+                    [class.fa-chevron-right]="isSidebarCollapsed"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a routerLink="/geofencing/tracking" routerLinkActive="active">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <span *ngIf="!isSidebarCollapsed">Live Tracking</span>
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/geofencing/alerts" routerLinkActive="active">
+                        <i class="fa-solid fa-bell"></i>
+                        <span *ngIf="!isSidebarCollapsed">Alerts & History</span>
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="/geofencing/supervision" routerLinkActive="active">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span *ngIf="!isSidebarCollapsed">Supervision & Stats</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer" *ngIf="!isSidebarCollapsed">
+            <div class="status-summary">
+                <p><i class="fa-solid fa-shield-heart"></i> System Active</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <router-outlet></router-outlet>
+    </main>
+</div>

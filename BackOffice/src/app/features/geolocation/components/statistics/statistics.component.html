@@ -1,0 +1,118 @@
+<div class="statistics-container">
+    <!-- Navigation Tabs -->
+    <nav mat-tab-nav-bar class="nav-tabs">
+        <a mat-tab-link routerLink="/geolocation/zones" routerLinkActive #rla1="routerLinkActive"
+            [active]="rla1.isActive">
+            Zones Géographiques
+        </a>
+        <a mat-tab-link routerLink="/geolocation/alerts" routerLinkActive #rla2="routerLinkActive"
+            [active]="rla2.isActive">
+            Alertes
+        </a>
+        <a mat-tab-link routerLink="/geolocation/statistics" routerLinkActive #rla3="routerLinkActive"
+            [active]="rla3.isActive">
+            Statistiques
+        </a>
+    </nav>
+
+    <h2>Statistiques de Géolocalisation</h2>
+
+    <!-- Statistics Cards -->
+    <div class="stats-cards" *ngIf="alertStats">
+        <mat-card>
+            <mat-card-content>
+                <div class="stat-value">{{alertStats.totalAlerts}}</div>
+                <div class="stat-label">Total Alertes (ce mois)</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card>
+            <mat-card-content>
+                <div class="stat-value">{{resolutionRate}}%</div>
+                <div class="stat-label">Taux de Résolution</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card>
+            <mat-card-content>
+                <div class="stat-value">{{alertStats.activeAlerts}}</div>
+                <div class="stat-label">Alertes Actives</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card>
+            <mat-card-content>
+                <div class="stat-value">{{mostProblematicZone}}</div>
+                <div class="stat-label">Zone la Plus Problématique</div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
+    <!-- Movement Statistics Table -->
+    <mat-card class="table-card">
+        <mat-card-header>
+            <mat-card-title>Statistiques de Déplacements par Patient</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <table mat-table [dataSource]="movementStats" class="full-width">
+                <ng-container matColumnDef="patient">
+                    <th mat-header-cell *matHeaderCellDef>Patient</th>
+                    <td mat-cell *matCellDef="let row">{{row.patientName}}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="movements">
+                    <th mat-header-cell *matHeaderCellDef>Nombre de Déplacements</th>
+                    <td mat-cell *matCellDef="let row">{{row.movementCount}}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="distance">
+                    <th mat-header-cell *matHeaderCellDef>Distance Moyenne (km)</th>
+                    <td mat-cell *matCellDef="let row">{{row.averageDistance}}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="zone">
+                    <th mat-header-cell *matHeaderCellDef>Zone la Plus Visitée</th>
+                    <td mat-cell *matCellDef="let row">{{row.mostVisitedZone}}</td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="['patient', 'movements', 'distance', 'zone']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['patient', 'movements', 'distance', 'zone'];"></tr>
+            </table>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Risk Zones Table -->
+    <mat-card class="table-card">
+        <mat-card-header>
+            <mat-card-title>Zones à Risque Élevé</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <table mat-table [dataSource]="riskZones" class="full-width">
+                <ng-container matColumnDef="zone">
+                    <th mat-header-cell *matHeaderCellDef>Zone</th>
+                    <td mat-cell *matCellDef="let row">{{row.zoneName}}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="alerts">
+                    <th mat-header-cell *matHeaderCellDef>Nombre d'Alertes</th>
+                    <td mat-cell *matCellDef="let row">
+                        <mat-chip color="warn">{{row.alertCount}}</mat-chip>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="patients">
+                    <th mat-header-cell *matHeaderCellDef>Patients Concernés</th>
+                    <td mat-cell *matCellDef="let row">{{row.affectedPatients}}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="resolution">
+                    <th mat-header-cell *matHeaderCellDef>Taux de Résolution</th>
+                    <td mat-cell *matCellDef="let row">{{row.resolutionRate}}%</td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="['zone', 'alerts', 'patients', 'resolution']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['zone', 'alerts', 'patients', 'resolution'];"></tr>
+            </table>
+        </mat-card-content>
+    </mat-card>
+</div>

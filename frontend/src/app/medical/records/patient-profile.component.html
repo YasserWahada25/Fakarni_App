@@ -1,0 +1,71 @@
+<div class="profile-container">
+    <!-- Patient Header Card -->
+    <div class="patient-header">
+        <div class="avatar">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="info">
+            <h1>{{ patient.name }}</h1>
+            <p><span class="label">Age:</span> {{ patient.age }} | <span class="label">Blood Type:</span> {{
+                patient.bloodType }}</p>
+            <span class="condition-badge">{{ patient.condition }}</span>
+        </div>
+        <div class="vitals-grid">
+            <div class="vital-item">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <span class="value">{{ vitals.bp }}</span>
+                <span class="unit">mmHg</span>
+            </div>
+            <div class="vital-item">
+                <i class="fa-solid fa-heart"></i>
+                <span class="value">{{ vitals.heartRate }}</span>
+                <span class="unit">bpm</span>
+            </div>
+            <div class="vital-item">
+                <i class="fa-solid fa-weight-scale"></i>
+                <span class="value">{{ vitals.weight }}</span>
+                <span class="unit">kg</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <!-- Consultation History -->
+        <div class="card history-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Medical History</h3>
+            </div>
+            <div class="timeline">
+                <div class="timeline-item" *ngFor="let item of history">
+                    <div class="timeline-date">{{ item.date }}</div>
+                    <div class="timeline-content">
+                        <h4>{{ item.type }} <span class="doctor">with {{ item.doctor }}</span></h4>
+                        <p class="diagnosis"><strong>Diagnosis:</strong> {{ item.diagnosis }}</p>
+                        <p class="treatment"><strong>Treatment:</strong> {{ item.treatment }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evolution Charts -->
+        <div class="card chart-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-chart-line"></i> MMSE Evolution</h3>
+                <p>Mini-Mental State Examination Scores</p>
+            </div>
+            <div class="chart-area">
+                <div class="bar-chart">
+                    <div class="bar-group" *ngFor="let data of chartData">
+                        <div class="bar" [style.height]="getBarHeight(data.score)" [title]="'Score: ' + data.score">
+                            <span class="bar-value">{{ data.score }}</span>
+                        </div>
+                        <span class="bar-label">{{ data.date }}</span>
+                    </div>
+                </div>
+                <div class="chart-legend">
+                    Standard Range: 24-30 (Normal)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

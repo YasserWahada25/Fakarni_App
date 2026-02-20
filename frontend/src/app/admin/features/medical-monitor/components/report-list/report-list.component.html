@@ -1,0 +1,67 @@
+<div class="report-list-container">
+    <div class="header">
+        <h2>Gestion des Rapports Médicaux</h2>
+        <button mat-raised-button color="accent" (click)="openReportDialog()">
+            <mat-icon>add</mat-icon> Ajouter un rapport
+        </button>
+    </div>
+
+    <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Rechercher un rapport</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Patient, type, statut..." #input>
+        <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <div class="mat-elevation-z2 table-container">
+        <table mat-table [dataSource]="dataSource" matSort>
+
+            <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
+                <td mat-cell *matCellDef="let row"> {{row.date | date:'dd/MM/yyyy'}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="patient">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Patient </th>
+                <td mat-cell *matCellDef="let row"> <span class="bold-text">{{row.patientName}}</span> </td>
+            </ng-container>
+
+            <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Type de Rapport </th>
+                <td mat-cell *matCellDef="let row"> {{row.type}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Statut </th>
+                <td mat-cell *matCellDef="let row">
+                    <span class="status-badge" [ngClass]="{
+                        'completed': row.status === 'Terminé',
+                        'pending': row.status === 'En attente',
+                        'critical': row.status === 'Critique'
+                    }">
+                        {{row.status}}
+                    </span>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let row">
+                    <button mat-icon-button color="primary" (click)="openReportDialog(row)" matTooltip="Modifier">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteReport(row)" matTooltip="Supprimer">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" colspan="5">Aucun rapport trouvé.</td>
+            </tr>
+        </table>
+        <mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
+    </div>
+</div>

@@ -1,0 +1,83 @@
+<div class="session-container">
+
+    <div class="calendar-section mat-elevation-z2">
+        <h3>Calendrier des Sessions</h3>
+        <mat-calendar [selected]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>
+        <div class="reset-filter" *ngIf="selectedDate">
+            <button mat-button color="primary" (click)="onDateSelected(null)">Voir toutes les sessions</button>
+        </div>
+    </div>
+
+    <div class="list-section">
+        <div class="header">
+            <h2>Sessions Programmées</h2>
+            <button mat-raised-button color="accent" (click)="openSessionDialog()">
+                <mat-icon>add</mat-icon> Ajouter une session
+            </button>
+        </div>
+
+        <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Rechercher</mat-label>
+            <input matInput (keyup)="applyFilter($event)" placeholder="Nom, statut..." #input>
+            <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <div class="mat-elevation-z2 table-container">
+            <table mat-table [dataSource]="dataSource" matSort>
+
+                <ng-container matColumnDef="title">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Nom de la session </th>
+                    <td mat-cell *matCellDef="let row"> <span class="bold-text">{{row.title}}</span> </td>
+                </ng-container>
+
+                <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
+                    <td mat-cell *matCellDef="let row"> {{row.date | date:'dd/MM/yyyy'}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="startTime">
+                    <th mat-header-cell *matHeaderCellDef> Heure </th>
+                    <td mat-cell *matCellDef="let row"> {{row.startTime}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Statut </th>
+                    <td mat-cell *matCellDef="let row">
+                        <span class="status-badge" [ngClass]="row.status">
+                            {{
+                            row.status === 'in-progress' ? 'En cours' :
+                            row.status === 'completed' ? 'Terminé' :
+                            row.status === 'scheduled' ? 'Prévu' : 'Annulé'
+                            }}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="participants">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Participants </th>
+                    <td mat-cell *matCellDef="let row"> {{row.participantsCount}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef> Actions </th>
+                    <td mat-cell *matCellDef="let row">
+                        <button mat-icon-button color="primary" (click)="openSessionDialog(row)" matTooltip="Modifier">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deleteSession(row)" matTooltip="Supprimer">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="6">Aucune session trouvée.</td>
+                </tr>
+            </table>
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+        </div>
+    </div>
+</div>

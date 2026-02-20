@@ -1,0 +1,51 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <div class="logo-container">
+      <img src="logo.png" alt="Fakarni Logo" class="logo-img">
+      <div class="slogan-text">فـــــــــكرنـــــــــــــي</div>
+    </div>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Tableau de bord</span>
+      </a>
+      <a mat-list-item routerLink="/users" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon>people</mat-icon>
+        <span matListItemTitle>Gestion utilisateurs</span>
+      </a>
+      <a mat-list-item routerLink="/sessions-events" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon>event</mat-icon>
+        <span matListItemTitle>Sessions & Événements</span>
+      </a>
+      <a mat-list-item routerLink="/medical-monitoring" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon>monitor_heart</mat-icon>
+        <span matListItemTitle>Suivi Médical</span>
+      </a>
+      <a mat-list-item routerLink="/geolocation" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon>location_on</mat-icon>
+        <span matListItemTitle>Géolocalisation & Alertes</span>
+      </a>
+      <a mat-list-item routerLink="/educational-content" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon>school</mat-icon>
+        <span matListItemTitle>Contenu Éducatif</span>
+      </a>
+
+      <a mat-list-item routerLink="/settings" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon>settings</mat-icon>
+        <span matListItemTitle>Paramètres</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="main-toolbar">
+      <span class="toolbar-title">Fakarni - Tableau de bord Administratif</span>
+      <span class="spacer"></span>
+      <button mat-icon-button>
+        <mat-icon>account_circle</mat-icon>
+      </button>
+    </mat-toolbar>
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

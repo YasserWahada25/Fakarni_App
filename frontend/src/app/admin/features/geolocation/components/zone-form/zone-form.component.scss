@@ -1,0 +1,21 @@
+.full-width {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.coordinates-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+mat-dialog-content {
+    min-width: 500px;
+}

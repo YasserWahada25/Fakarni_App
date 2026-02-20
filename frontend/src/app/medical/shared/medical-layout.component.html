@@ -1,0 +1,37 @@
+<div class="medical-layout">
+    <aside class="sidebar" [class.collapsed]="isSidebarCollapsed">
+        <div class="sidebar-header">
+            <h2>Medical Care</h2>
+            <button class="toggle-btn" (click)="toggleSidebar()">
+                <i class="fa-solid" [class.fa-chevron-left]="!isSidebarCollapsed"
+                    [class.fa-chevron-right]="isSidebarCollapsed"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a routerLink="records" routerLinkActive="active">
+                        <i class="fa-solid fa-file-medical"></i>
+                        <span>Medical Records</span>
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="detection" routerLinkActive="active">
+                        <i class="fa-solid fa-microscope"></i>
+                        <span>Disease Detection</span>
+                    </a>
+                </li>
+                <li>
+                    <a routerLink="follow-up" routerLinkActive="active">
+                        <i class="fa-solid fa-notes-medical"></i>
+                        <span>Follow-up</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="content-area">
+        <router-outlet></router-outlet>
+    </main>
+</div>

@@ -1,0 +1,60 @@
+<div class="favorites-container">
+    <div class="header-section">
+        <div class="header-icon">
+            <i class="fa-solid fa-star"></i>
+        </div>
+        <div>
+            <h2>My Favorite Sessions</h2>
+            <p class="subtitle">Access your saved sessions quickly.</p>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your favorites...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && favoriteSessions.length === 0" class="empty-state">
+        <div class="empty-icon">
+            <i class="fa-regular fa-star"></i>
+        </div>
+        <h3>No Favorites Yet</h3>
+        <p>Visit the calendar and click the star icon on sessions you'd like to save here.</p>
+        <a routerLink="../consultation" class="go-calendar-btn">
+            <i class="fa-regular fa-calendar"></i> Go to Calendar
+        </a>
+    </div>
+
+    <!-- Favorites Grid -->
+    <div *ngIf="!isLoading && favoriteSessions.length > 0" class="favorites-grid">
+        <div *ngFor="let session of favoriteSessions; let i = index" class="fav-card"
+            [style.animation-delay]="(i * 80) + 'ms'">
+
+            <div class="card-accent" [ngClass]="getTypeClass(session.type)"></div>
+
+            <div class="fav-header">
+                <span class="type-badge" [ngClass]="getTypeClass(session.type)">{{ session.type }}</span>
+                <button class="remove-btn" (click)="removeFavorite(session)" title="Remove from favorites">
+                    <i class="fa-solid fa-star"></i>
+                </button>
+            </div>
+
+            <h3>{{ session.title }}</h3>
+
+            <div class="fav-meta">
+                <p><i class="fa-regular fa-calendar"></i> {{ session.date | date:'fullDate' }}</p>
+                <p *ngIf="session.time"><i class="fa-regular fa-clock"></i> {{ session.time }}</p>
+            </div>
+
+            <p class="desc">{{ session.description }}</p>
+
+            <div class="card-actions">
+                <button class="join-btn" (click)="joinMeeting(session)">
+                    <i class="fa-solid fa-video"></i> Join
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

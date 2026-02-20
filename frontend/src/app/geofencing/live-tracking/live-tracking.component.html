@@ -1,0 +1,54 @@
+<div class="tracking-container">
+    <div class="map-section">
+        <div class="map-view">
+            <!-- Background Map Image Placeholder -->
+            <div class="map-background"></div>
+
+            <!-- Patient Markers -->
+            <div class="marker" *ngFor="let patient of patients"
+                [style.left.px]="getMapPosition(patient.coordinates.lat, patient.coordinates.lng).x"
+                [style.top.px]="getMapPosition(patient.coordinates.lat, patient.coordinates.lng).y"
+                [class.warning]="patient.status === 'Warning'" [class.critical]="patient.status === 'Critical'"
+                (click)="selectPatient(patient)">
+
+                <div class="marker-dot"></div>
+                <div class="marker-pulse" *ngIf="patient.status !== 'Safe'"></div>
+                <div class="marker-label">{{ patient.name }}</div>
+            </div>
+
+            <!-- Zones (Visual Mockup) -->
+            <div class="zone zone-home" style="left: 380px; top: 220px; width: 150px; height: 150px;">
+                <span>Home Zone</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <h3><i class="fa-solid fa-users-viewfinder"></i> Live Status</h3>
+
+        <div class="patient-list">
+            <div class="patient-card" *ngFor="let patient of patients" [class.active]="selectedPatient === patient"
+                (click)="selectPatient(patient)">
+                <div class="patient-header">
+                    <span class="name">{{ patient.name }}</span>
+                    <span class="status-badge" [ngClass]="patient.status.toLowerCase()">{{ patient.status }}</span>
+                </div>
+                <div class="patient-details">
+                    <p><i class="fa-solid fa-location-dot"></i> Last Update: {{ patient.lastUpdate | date:'shortTime' }}
+                    </p>
+                    <p><i class="fa-solid fa-map-pin"></i> Zone: {{ zones[patient.currentZoneId]?.name || 'Unknown' }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="zone-legend">
+            <h4>Zone Status</h4>
+            <ul>
+                <li><span class="legend-dot safe"></span> Safe Zone</li>
+                <li><span class="legend-dot risk"></span> Risk Zone</li>
+                <li><span class="legend-dot restricted"></span> Restricted</li>
+            </ul>
+        </div>
+    </div>
+</div>

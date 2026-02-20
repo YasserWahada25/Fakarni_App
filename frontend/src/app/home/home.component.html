@@ -1,0 +1,153 @@
+<!-- Hero Section -->
+<section class="hero-section" *ngIf="heroVisible()" @fadeIn>
+    <div class="hero-bg-image"></div>
+    <div class="hero-overlay"></div>
+
+    <div class="container hero-container">
+        <div class="hero-content-wrapper">
+            <div class="hero-text-content">
+                <span class="hero-tagline" @fadeInUp>
+                    <i class="fa-solid fa-plus"></i>
+                    <i class="fa-solid fa-plus"></i>
+                    <i class="fa-solid fa-plus"></i>
+                    RAISE YOUR VOICE TO WIN
+                </span>
+                <h1 class="hero-title" @fadeInUp>
+                    Seniors Deserve<br>
+                    <span class="hero-title-outline">Better Life</span> Taking<br>
+                    Care Relatives <i class="fa-solid fa-star hero-star"></i>
+                </h1>
+                <p class="hero-description" @fadeInUp>
+                    We collaborate, we think, we create outside the box.
+                </p>
+                <a href="#services" class="btn btn-primary learn-more-btn" @fadeInUp>
+                    LEARN MORE <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="hero-badge" @fadeInUp>
+                <div class="badge-circle">
+                    <div class="badge-text">MEDICAL SUPPORT</div>
+                    <div class="badge-icon">
+                        <i class="fa-solid fa-heart-pulse"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="services-section section-padding">
+    <div class="container services-container">
+        <div class="services-images" *ngIf="servicesVisible()" @fadeInUp>
+            <div class="img-collage">
+                <img src="https://www.choosecomforthome.com/wp-content/uploads/2016/05/elderly-personal-care.jpg"
+                    class="img-main" alt="Care">
+
+                <img src="https://research.american.edu/careworkeconomy/wp-content/uploads/sites/2/2019/09/nurse-comforting-elder-lady-2mp.jpg"
+                    class="img-icon" alt="Heart">
+                <img src="https://media.istockphoto.com/id/1490280970/photo/home-nurse-caregiver.jpg?s=612x612&w=0&k=20&c=qEO397wSWQuN1eoV9KWXoqOsDpLYhnqFywfiWQTRzeI="
+                    class="img-sub" alt="Care">
+            </div>
+        </div>
+
+        <div class="services-content">
+            <span class="sub-title" *ngIf="servicesVisible()" @fadeInUp>
+                <i class="fa-solid fa-plus"></i> ABOUT US
+            </span>
+            <h2 class="section-title" *ngIf="servicesVisible()" @fadeInUp>
+                We Believe We Can <br> Save More Lives
+            </h2>
+            <p class="section-desc" *ngIf="servicesVisible()" @fadeInUp>
+                At our senior care center, we believe we can save more lives—not just through advanced medical support,
+                but through early intervention, daily monitoring, and heartfelt human connection.
+            </p>
+
+            <div class="service-cards" [@staggerList]="servicesVisible() ? 'visible' : 'hidden'">
+                <div class="service-card" *ngIf="servicesVisible()">
+                    <div class="card-icon"><i class="fa-solid fa-user-nurse"></i></div>
+                    <div class="card-text">
+                        <h3>Personalized Care Service</h3>
+                    </div>
+                </div>
+                <div class="service-card" *ngIf="servicesVisible()">
+                    <div class="card-icon"><i class="fa-solid fa-kit-medical"></i></div>
+                    <div class="card-text">
+                        <h3>Complete Medical Supply</h3>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="check-list" [@staggerList]="servicesVisible() ? 'visible' : 'hidden'">
+                <li *ngIf="servicesVisible()">
+                    <i class="fa-solid fa-circle-check"></i> Compassionate Eldercare Solutions
+                </li>
+                <li *ngIf="servicesVisible()">
+                    <i class="fa-solid fa-circle-check"></i> Everlasting Comfort Eldercare
+                </li>
+                <li *ngIf="servicesVisible()">
+                    <i class="fa-solid fa-circle-check"></i> Serenity at Home Senior Services
+                </li>
+            </ul>
+
+            <a href="#contact" class="btn btn-primary" *ngIf="servicesVisible()" @fadeInUp>
+                DISCOVER MORE <i class="fa-solid fa-arrow-right-long"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section id="cta-section" class="cta-section section-padding">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="pill-label" *ngIf="ctaVisible()" @fadeInUp>OUR WORKING PROCESS</span>
+            <h2 class="section-title" *ngIf="ctaVisible()" @fadeInUp>
+                Get Started In Just <span class="highlight">3 Steps</span>
+            </h2>
+        </div>
+
+        <div class="process-steps" [@staggerList]="ctaVisible() ? 'visible' : 'hidden'">
+            <div class="step-item" *ngIf="ctaVisible()">
+                <div class="step-image">
+                    <img src="https://homecareassistancemontgomery.com/wp-content/uploads/2020/05/Older-Adult-in-Wheelchair.jpg"
+                        alt="Enquiry">
+                    <span class="step-number">01</span>
+                </div>
+                <div class="step-content">
+                    <h3>Make An Enquiry</h3>
+                    <p>Feel free to reach out and make an enquiry. We're here to assist you.</p>
+                </div>
+            </div>
+
+            <div class="step-connector"></div>
+
+            <div class="step-item" *ngIf="ctaVisible()">
+                <div class="step-image">
+                    <img src="https://www.michiganmedicine.org/sites/default/files/styles/article_main_image/public/2023-11/seniors-playing-cards-laughing-game_0.jpg?h=f0fb51a5&itok=2HAHdxwm"
+                        alt="Plan">
+                    <span class="step-number">02</span>
+                </div>
+                <div class="step-content">
+                    <h3>Create A NDIS Plan</h3>
+                    <p>Let's craft a personalized NDIS plan to address your specific needs.</p>
+                </div>
+            </div>
+
+            <div class="step-connector"></div>
+
+            <div class="step-item" *ngIf="ctaVisible()">
+                <div class="step-image">
+                    <img src="https://halescare.co.uk/wp-content/uploads/2023/02/Signs-Elderly-Parents-Need-Home-Care-Support-1024x535.png"
+                        alt="Care">
+                    <span class="step-number">03</span>
+                </div>
+                <div class="step-content">
+                    <h3>Start Exceptional Care</h3>
+                    <p>Start your journey with us, where we prioritize your exceptional care.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

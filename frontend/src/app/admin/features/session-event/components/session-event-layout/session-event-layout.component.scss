@@ -1,0 +1,26 @@
+.session-event-layout {
+    padding: 24px;
+    background: linear-gradient(135deg, #f8f7ff 0%, #f5f3fa 100%);
+    min-height: 100%;
+}
+
+.tab-content {
+    padding-top: 20px;
+}
+
+::ng-deep .mat-mdc-tab-group {
+    background-color: transparent;
+}
+
+::ng-deep .mat-mdc-tab-label-container {
+    border-bottom: 2px solid #e8e4f0;
+}
+
+::ng-deep .mdc-tab--active .mdc-tab__text-label {
+    color: #5c6bc0 !important;
+    font-weight: 600 !important;
+}
+
+::ng-deep .mdc-tab-indicator__content--underline {
+    border-color: #5c6bc0 !important;
+}
