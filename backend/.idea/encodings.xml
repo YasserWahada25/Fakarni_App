@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-<<<<<<< HEAD
     <file url="file://$PROJECT_DIR$/Eureka-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Event-Service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Gateway-Service/src/main/java" charset="UTF-8" />
-=======
-    <file url="file://$PROJECT_DIR$/Discovery-Service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/Gateway-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Post-Service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/User-Service/src/main/java" charset="UTF-8" />
->>>>>>> 274f2ef73b8e33f2f29e5e97d27b4bd5663315d3
+    <file url="file://$PROJECT_DIR$/UserSession-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/group/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/meeting-insights-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/session-service/src/main/java" charset="UTF-8" />
   </component>
