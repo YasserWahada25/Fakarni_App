@@ -5,7 +5,8 @@
             <mat-icon class="section-icon">calendar_today</mat-icon>
             Calendrier des Sessions
         </h3>
-        <mat-calendar [selected]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>
+        <mat-calendar #calendar [selected]="selectedDate" [dateFilter]="allowAllDates"
+            (selectedChange)="onDateSelected($event)" (click)="onCalendarClick($event)"></mat-calendar>
         <div class="reset-filter" *ngIf="selectedDate">
             <button mat-button color="primary" (click)="onDateSelected(null)">
                 <mat-icon>clear_all</mat-icon> Voir toutes les sessions

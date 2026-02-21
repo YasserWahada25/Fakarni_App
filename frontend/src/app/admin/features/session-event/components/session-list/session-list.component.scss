@@ -186,6 +186,11 @@ table {
     border-color: #5c6bc0 !important;
 }
 
+::ng-deep .calendar-section .mat-calendar-body-cell:not(.mat-calendar-body-disabled) {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
 @media (max-width: 900px) {
     .session-container {
         flex-direction: column;

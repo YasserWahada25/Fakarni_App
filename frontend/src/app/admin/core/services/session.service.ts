@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, map, catchError, throwError } from 'rxjs';
+import { HttpParams } from '@angular/common/http';
+import { Observable, of, map, catchError } from 'rxjs';
 import { Session } from '../models/session.model';
 import { environment } from '../../../../environments/environment';
 
@@ -44,6 +45,36 @@ export class SessionService {
         );
     }
 
+    getSessionsByDate(date: Date): Observable<Session[]> {
+        const normalizedDate = this.normalizeDate(date);
+        const from = new Date(
+            normalizedDate.getFullYear(),
+            normalizedDate.getMonth(),
+            normalizedDate.getDate(),
+            0,
+            0,
+            0,
+            0
+        );
+        const to = new Date(
+            normalizedDate.getFullYear(),
+            normalizedDate.getMonth(),
+            normalizedDate.getDate(),
+            23,
+            59,
+            59,
+            999
+        );
+
+        const params = new HttpParams()
+            .set('from', from.toISOString())
+            .set('to', to.toISOString());
+
+        return this.http.get<VirtualSessionResponse[]>(`${this.apiUrl}/sessions`, { params }).pipe(
+            map(data => data.map(s => this.mapToSession(s)))
+        );
+    }
+
     getSessionById(id: number): Observable<Session | undefined> {
         return this.http.get<VirtualSessionResponse>(`${this.apiUrl}/sessions/${id}`).pipe(
             map(s => this.mapToSession(s)),
@@ -78,12 +109,18 @@ export class SessionService {
     private mapToSession(s: VirtualSessionResponse): Session {
         const startDate = new Date(s.startTime);
         const endDate = new Date(s.endTime);
+        const sessionDate = new Date(
+            startDate.getFullYear(),
+            startDate.getMonth(),
+            startDate.getDate()
+        );
+
         return {
             id: s.id,
             title: s.title,
-            date: startDate,
-            startTime: startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
-            endTime: endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+            date: sessionDate,
+            startTime: this.formatTime(startDate),
+            endTime: this.formatTime(endDate),
             status: s.status as Session['status'],
             participantsCount: s.participants?.length || 0,
             description: s.description,
@@ -95,19 +132,46 @@ export class SessionService {
     }
 
     private mapToCreateRequest(session: Session): CreateSessionRequest {
-        const dateStr = session.date instanceof Date
-            ? session.date.toISOString().split('T')[0]
-            : new Date(session.date).toISOString().split('T')[0];
+        const sessionDate = this.normalizeDate(session.date);
+        const startTime = this.buildDateTime(sessionDate, session.startTime);
+        const endTime = this.buildDateTime(sessionDate, session.endTime);
 
         return {
             title: session.title,
             description: session.description,
-            startTime: `${dateStr}T${session.startTime}:00Z`,
-            endTime: `${dateStr}T${session.endTime}:00Z`,
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
             meetingUrl: session.meetingUrl || '',
             createdBy: session.createdBy || 'admin',
             status: session.status || 'SCHEDULED',
             visibility: session.visibility || 'PUBLIC'
         };
+    }
+
+    private normalizeDate(dateValue: Date | string): Date {
+        const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    private buildDateTime(date: Date, time: string): Date {
+        const [hourPart = '0', minutePart = '0'] = time.split(':');
+        const hours = Number.parseInt(hourPart, 10);
+        const minutes = Number.parseInt(minutePart, 10);
+
+        return new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            Number.isNaN(hours) ? 0 : hours,
+            Number.isNaN(minutes) ? 0 : minutes,
+            0,
+            0
+        );
+    }
+
+    private formatTime(dateTime: Date): string {
+        const hours = dateTime.getHours().toString().padStart(2, '0');
+        const minutes = dateTime.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
     }
 }
