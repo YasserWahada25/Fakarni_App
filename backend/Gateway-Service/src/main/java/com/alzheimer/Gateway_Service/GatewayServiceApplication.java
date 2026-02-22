@@ -21,11 +21,11 @@ public class GatewayServiceApplication {
 	public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
 		return builder.routes()
 
-				.route("User-Service", r -> r.path("/session/**")
+				.route("session_service", r -> r.path("/session/**")
 						.uri("lb://SESSION-SERVICE"))
-				.route("session_service", r -> r.path("/api/users/**")
-						.uri("lb://USER-SERVICE"))
 
+				.route("User-Service", r -> r.path("/api/users/**")
+						.uri("lb://USER-SERVICE"))
 
 				.build();
 
