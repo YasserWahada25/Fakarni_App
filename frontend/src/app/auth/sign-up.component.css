@@ -55,11 +55,24 @@
     color: var(--text-main);
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 4px rgba(160, 132, 220, 0.1);
     outline: none;
     background-color: var(--white);
+}
+
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--bg-secondary);
+    border-radius: 8px;
+    transition: var(--transition-smooth);
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 1rem;
 }
 
 .btn-block {

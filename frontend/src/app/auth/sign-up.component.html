@@ -4,25 +4,47 @@
             <h2>Create Account</h2>
             <p>Fill in the details below to create an account.</p>
 
-            <form class="auth-form">
+            <form class="auth-form" [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
                 <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" placeholder="Enter your name">
+                    <label for="nom">Name</label>
+                    <input id="nom" type="text" formControlName="nom" placeholder="Your Name">
                 </div>
                 <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" placeholder="Enter your email">
+                    <label for="prenom">Last Name</label>
+                    <input id="prenom" type="text" formControlName="prenom" placeholder="">
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" placeholder="Create a password">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" formControlName="email" placeholder="Example@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input id="password" type="password" formControlName="password" placeholder="Minimum 6 characters">
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" formControlName="role">
+                        @for (opt of roleOptions; track opt.value) {
+                            <option [value]="opt.value">{{ opt.label }}</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="numTel">Phone Number</label>
+                    <input id="numTel" type="tel" formControlName="numTel" placeholder="Ex: 12345678">
+                </div>
+                <div class="form-group">
+                    <label for="adresse">Address</label>
+                    <input id="adresse" type="text" formControlName="adresse" placeholder="Your address">
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block">SIGN UP</button>
+                <button type="submit" class="btn btn-primary btn-block" [disabled]="signUpForm.invalid">
+                    SIGN UP
+                </button>
             </form>
 
             <p class="auth-footer mt-4">
-                Already have an account? <a href="/auth/signin">Sign In</a>
+                Already have an account? <a routerLink="/auth/signin">Sign In</a>
             </p>
         </div>
     </div>
