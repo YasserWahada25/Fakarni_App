@@ -16,6 +16,10 @@ export interface AnalyseIRMResponse {
   probVeryMildDemented: number;
   dateAnalyse: string;
   patientId: number;
+  // ✅ Nouveaux champs (optionnels car pas toujours présents)
+  conseilMedecin?: string;
+  notesCliniques?: string;
+  dateModification?: string;
 }
 
 export interface DossierMedicalResponse {
@@ -30,6 +34,13 @@ export interface DossierMedicalResponse {
   analyses: AnalyseIRMResponse[];
 }
 
+export interface UpdateDescriptionRequest {
+  analyseId: number;
+  descriptionRisque?: string;
+  conseilMedecin?: string;
+  notesCliniques?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DetectionService {
 
@@ -38,7 +49,7 @@ export class DetectionService {
 
   constructor(private http: HttpClient) {}
 
-  // ✅ Appelé depuis mri-analysis.component
+  // MRI Analysis
   analyserIRM(imageFile: File): Observable<AnalyseIRMResponse> {
     const formData = new FormData();
     formData.append('image', imageFile);
@@ -48,25 +59,27 @@ export class DetectionService {
     );
   }
 
-  // ✅ Appelé depuis follow-up.component
+  // Read dossier
   getDossierByPatientId(patientId: number): Observable<DossierMedicalResponse> {
     return this.http.get<DossierMedicalResponse>(
       `${this.DOSSIER_URL}/api/dossiers/patient/${patientId}`
     );
   }
 
-  // ✅ UPDATE
-updateAnalyse(id: number, updates: any): Observable<DossierMedicalResponse> {
-  return this.http.put<DossierMedicalResponse>(
-    `${this.DOSSIER_URL}/api/dossiers/analyse/update/${id}`,
-    updates
-  );
-}
+  // ✅ UPDATE - BON ENDPOINT
+  updateAnalyseDescription(request: UpdateDescriptionRequest): Observable<DossierMedicalResponse> {
+    console.log('🔵 API UPDATE appelé:', request);
+    return this.http.put<DossierMedicalResponse>(
+      `${this.DOSSIER_URL}/api/dossiers/analyse/update-description`,
+      request
+    );
+  }
 
-// ✅ DELETE
-deleteAnalyse(id: number): Observable<void> {
-  return this.http.delete<void>(
-    `${this.DOSSIER_URL}/api/dossiers/analyse/${id}`
-  );
-}
+  // ✅ DELETE - BON ENDPOINT
+  deleteAnalyse(analyseId: number): Observable<DossierMedicalResponse> {
+    console.log('🔵 API DELETE appelé:', analyseId);
+    return this.http.delete<DossierMedicalResponse>(
+      `${this.DOSSIER_URL}/api/dossiers/analyse/${analyseId}`
+    );
+  }
 }
