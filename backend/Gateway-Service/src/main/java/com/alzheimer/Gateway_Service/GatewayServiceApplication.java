@@ -20,22 +20,15 @@ public class GatewayServiceApplication {
 	@Bean
 	public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
 		return builder.routes()
-
+				.route("User-Auth", r -> r.path("/auth/**")
+						.uri("lb://USER-SERVICE"))
 				.route("session_service", r -> r.path("/session/**")
 						.uri("lb://SESSION-SERVICE"))
-
 				.route("Event-Service", r -> r.path("/api/events/**")
 						.uri("lb://EVENT-SERVICE"))
 				.route("User-Service", r -> r.path("/api/users/**")
 						.uri("lb://USER-SERVICE"))
 				.build();
-
-
-
-
-
-
-
 	}
 
 }

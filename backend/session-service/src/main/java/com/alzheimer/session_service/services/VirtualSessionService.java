@@ -1,7 +1,15 @@
 package com.alzheimer.session_service.services;
 
-import com.alzheimer.session_service.dto.*;
-import com.alzheimer.session_service.entities.*;
+import com.alzheimer.session_service.dto.AddParticipantRequest;
+import com.alzheimer.session_service.dto.CreateSessionRequest;
+import com.alzheimer.session_service.dto.UpdateParticipantPrefsRequest;
+import com.alzheimer.session_service.dto.UpdateParticipantStatusRequest;
+import com.alzheimer.session_service.dto.UpdateSessionRequest;
+import com.alzheimer.session_service.entities.JoinStatus;
+import com.alzheimer.session_service.entities.ParticipantRole;
+import com.alzheimer.session_service.entities.SessionParticipant;
+import com.alzheimer.session_service.entities.SessionStatus;
+import com.alzheimer.session_service.entities.VirtualSession;
 import com.alzheimer.session_service.repositories.VirtualSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +24,7 @@ public class VirtualSessionService {
     private final VirtualSessionRepository repository;
 
     // =========================
-    // Exceptions internes (pas de dossier séparé)
+    // Exceptions internes (pas de dossier separe)
     // =========================
     public static class NotFoundException extends RuntimeException {
         public NotFoundException(String message) { super(message); }
@@ -28,7 +36,7 @@ public class VirtualSessionService {
 
     // -------- Sessions CRUD --------
 
-    public VirtualSession create(CreateSessionRequest req) {
+    public VirtualSession create(CreateSessionRequest req, String userId) {
         if (req.getEndTime().isBefore(req.getStartTime()) || req.getEndTime().equals(req.getStartTime())) {
             throw new BadRequestException("endTime must be after startTime");
         }
@@ -39,7 +47,7 @@ public class VirtualSessionService {
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .meetingUrl(req.getMeetingUrl())
-                .createdBy(req.getCreatedBy())
+                .createdBy(userId)
                 .status(req.getStatus())
                 .visibility(req.getVisibility())
                 .createdAt(Instant.now())
@@ -49,8 +57,12 @@ public class VirtualSessionService {
         return repository.save(session);
     }
 
-    public VirtualSession update(Long id, UpdateSessionRequest req) {
+    public VirtualSession update(Long id, UpdateSessionRequest req, String userId) {
         VirtualSession session = getById(id);
+
+        if (!userId.equals(session.getCreatedBy())) {
+            throw new BadRequestException("You are not allowed to update this session");
+        }
 
         if (req.getEndTime().isBefore(req.getStartTime()) || req.getEndTime().equals(req.getStartTime())) {
             throw new BadRequestException("endTime must be after startTime");
@@ -68,10 +80,13 @@ public class VirtualSessionService {
         return repository.save(session);
     }
 
-    public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new NotFoundException("Session not found: " + id);
+    public void delete(Long id, String userId) {
+        VirtualSession session = getById(id);
+
+        if (!userId.equals(session.getCreatedBy())) {
+            throw new BadRequestException("You are not allowed to delete this session");
         }
+
         repository.deleteById(id);
     }
 
@@ -84,21 +99,26 @@ public class VirtualSessionService {
         if (from == null || to == null) {
             return repository.findAll();
         }
-        if (status == null) return repository.findByStartTimeBetween(from, to);
+        if (status == null) {
+            return repository.findByStartTimeBetween(from, to);
+        }
         return repository.findByStatusAndStartTimeBetween(status, from, to);
     }
 
     // -------- Participants --------
 
-    public VirtualSession addParticipant(Long sessionId, AddParticipantRequest req) {
+    public VirtualSession addParticipant(Long sessionId, AddParticipantRequest req, String userId) {
+        String normalizedUserId = normalizeUserId(userId);
         VirtualSession session = getById(sessionId);
 
         boolean exists = session.getParticipants().stream()
-                .anyMatch(p -> p.getUserId().equals(req.getUserId()));
-        if (exists) throw new BadRequestException("Participant already exists in this session");
+                .anyMatch(p -> p.getUserId().equals(normalizedUserId));
+        if (exists) {
+            throw new BadRequestException("Participant already exists in this session");
+        }
 
         session.getParticipants().add(SessionParticipant.builder()
-                .userId(req.getUserId())
+                .userId(normalizedUserId)
                 .role(req.getRole())
                 .joinStatus(req.getJoinStatus())
                 .joinedAt(null)
@@ -111,15 +131,13 @@ public class VirtualSessionService {
     }
 
     public VirtualSession updateParticipantStatus(Long sessionId, String userId, UpdateParticipantStatusRequest req) {
+        String normalizedUserId = normalizeUserId(userId);
         VirtualSession session = getById(sessionId);
-        SessionParticipant p = findParticipant(session, userId);
+        SessionParticipant participant = findParticipant(session, normalizedUserId);
 
-        p.setJoinStatus(req.getJoinStatus());
-
-        // si ton DTO a boolean -> utilise req.isSetJoinedNow()
-        // si ton DTO a Boolean -> utilise Boolean.TRUE.equals(req.getSetJoinedNow())
+        participant.setJoinStatus(req.getJoinStatus());
         if (req.isSetJoinedNow()) {
-            p.setJoinedAt(Instant.now());
+            participant.setJoinedAt(Instant.now());
         }
 
         session.setUpdatedAt(Instant.now());
@@ -127,14 +145,24 @@ public class VirtualSessionService {
     }
 
     public VirtualSession updateParticipantPrefs(Long sessionId, String userId, UpdateParticipantPrefsRequest req) {
+        String normalizedUserId = normalizeUserId(userId);
         VirtualSession session = getById(sessionId);
-        SessionParticipant p = findParticipant(session, userId);
+        SessionParticipant participant = findOrCreateParticipant(session, normalizedUserId);
 
-        if (req.getIsFavorite() != null) p.setFavorite(req.getIsFavorite()); // Lombok: setFavorite(...)
-        p.setReminderMinutesBefore(req.getReminderMinutesBefore()); // null => disable
+        if (req.getIsFavorite() != null) {
+            participant.setFavorite(req.getIsFavorite());
+        }
+        participant.setReminderMinutesBefore(req.getReminderMinutesBefore());
 
         session.setUpdatedAt(Instant.now());
         return repository.save(session);
+    }
+
+    public VirtualSession setFavorite(Long sessionId, String userId, boolean favorite) {
+        UpdateParticipantPrefsRequest req = UpdateParticipantPrefsRequest.builder()
+                .isFavorite(favorite)
+                .build();
+        return updateParticipantPrefs(sessionId, userId, req);
     }
 
     public List<SessionParticipant> listParticipants(Long sessionId) {
@@ -144,23 +172,43 @@ public class VirtualSessionService {
     // -------- Views (favorites/reminders) --------
 
     public List<VirtualSession> listUserFavorites(String userId) {
-        return repository.findByParticipantUserId(userId).stream()
-                .filter(s -> s.getParticipants().stream()
-                        .anyMatch(p -> p.getUserId().equals(userId) && p.isFavorite()))
+        String normalizedUserId = normalizeUserId(userId);
+        return repository.findByParticipantUserId(normalizedUserId).stream()
+                .filter(session -> session.getParticipants().stream()
+                        .anyMatch(p -> p.getUserId().equals(normalizedUserId) && p.isFavorite()))
                 .toList();
     }
 
     public List<VirtualSession> listUserReminders(String userId, Instant from, Instant to) {
-        return repository.findByParticipantUserId(userId).stream()
-                .filter(s -> {
-                    if (from != null && s.getStartTime().isBefore(from)) return false;
-                    if (to != null && s.getStartTime().isAfter(to)) return false;
+        String normalizedUserId = normalizeUserId(userId);
+        return repository.findByParticipantUserId(normalizedUserId).stream()
+                .filter(session -> {
+                    if (from != null && session.getStartTime().isBefore(from)) return false;
+                    if (to != null && session.getStartTime().isAfter(to)) return false;
 
-                    return s.getParticipants().stream().anyMatch(p ->
-                            p.getUserId().equals(userId) && p.getReminderMinutesBefore() != null
+                    return session.getParticipants().stream().anyMatch(p ->
+                            p.getUserId().equals(normalizedUserId) && p.getReminderMinutesBefore() != null
                     );
                 })
                 .toList();
+    }
+
+    private SessionParticipant findOrCreateParticipant(VirtualSession session, String userId) {
+        return session.getParticipants().stream()
+                .filter(p -> p.getUserId().equals(userId))
+                .findFirst()
+                .orElseGet(() -> {
+                    SessionParticipant created = SessionParticipant.builder()
+                            .userId(userId)
+                            .role(ParticipantRole.PARTICIPANT)
+                            .joinStatus(JoinStatus.INVITED)
+                            .joinedAt(null)
+                            .isFavorite(false)
+                            .reminderMinutesBefore(null)
+                            .build();
+                    session.getParticipants().add(created);
+                    return created;
+                });
     }
 
     private SessionParticipant findParticipant(VirtualSession session, String userId) {
@@ -168,5 +216,16 @@ public class VirtualSessionService {
                 .filter(p -> p.getUserId().equals(userId))
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Participant not found for userId=" + userId));
+    }
+
+    private String normalizeUserId(String userId) {
+        if (userId == null) {
+            throw new BadRequestException("userId is required");
+        }
+        String normalizedUserId = userId.trim();
+        if (normalizedUserId.isEmpty()) {
+            throw new BadRequestException("userId is required");
+        }
+        return normalizedUserId;
     }
 }
