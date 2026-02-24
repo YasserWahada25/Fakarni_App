@@ -10,28 +10,33 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/geofencing")
 public class GeofencingController {
-    @Autowired private GeofencingService service;
 
-    // Endpoint 1 : Créer une zone
+    @Autowired private GeofencingService geofencingService;
+
     @PostMapping("/zone")
-    public Zone create(@RequestBody Zone z) { return service.addZone(z); }
+    public Zone create(@RequestBody Zone z) {
+        return geofencingService.addZone(z);
+    }
 
-    // Endpoint 2 : Lister les zones
     @GetMapping("/zones")
-    public List<Zone> list() { return service.getAll(); }
+    public List<Zone> list() {
+        return geofencingService.getAll();
+    }
 
-    // Endpoint 3 : Modifier une zone
     @PutMapping("/zone/{id}")
-    public Zone update(@PathVariable Long id, @RequestBody Zone z) { return service.updateZone(id, z); }
+    public Zone update(@PathVariable Long id, @RequestBody Zone z) {
+        return geofencingService.updateZone(id, z);
+    }
 
-    // Endpoint 4 : Supprimer une zone
     @DeleteMapping("/zone/{id}")
-    public void delete(@PathVariable Long id) { service.deleteZone(id); }
+    public void delete(@PathVariable Long id) {
+        geofencingService.deleteZone(id);
+    }
 
-    // Endpoint 5 : ANALYSE (Appelé par Tracking-Service)
+    // Endpoint d'analyse appelé par le Tracking-Service via Feign
     @PostMapping("/analyser")
     public void analyser(@RequestBody Map<String, Object> payload) {
-        service.verifierPosition(
+        geofencingService.verifierPosition(
                 payload.get("patientId").toString(),
                 Double.parseDouble(payload.get("latitude").toString()),
                 Double.parseDouble(payload.get("longitude").toString())

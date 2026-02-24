@@ -6,7 +6,6 @@ import { GeolocationRoutingModule } from './geolocation-routing.module';
 import { ZoneManagementComponent } from './components/zone-management/zone-management.component';
 import { AlertManagementComponent } from './components/alert-management/alert-management.component';
 import { StatisticsComponent } from './components/statistics/statistics.component';
-import { ZoneFormComponent } from './components/zone-form/zone-form.component';
 import { AlertDetailComponent } from './components/alert-detail/alert-detail.component';
 
 // Material Imports
@@ -30,40 +29,41 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatProgressSpinner } from "@angular/material/progress-spinner";
 
 @NgModule({
     declarations: [
         ZoneManagementComponent,
         AlertManagementComponent,
         StatisticsComponent,
-        ZoneFormComponent,
         AlertDetailComponent
     ],
     imports: [
-        CommonModule,
-        GeolocationRoutingModule,
-        ReactiveFormsModule,
-        FormsModule,
-        MatTableModule,
-        MatPaginatorModule,
-        MatSortModule,
-        MatInputModule,
-        MatFormFieldModule,
-        MatButtonModule,
-        MatIconModule,
-        MatDialogModule,
-        MatSelectModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        MatCardModule,
-        MatTooltipModule,
-        MatTabsModule,
-        MatChipsModule,
-        MatListModule,
-        MatCheckboxModule,
-        MatSlideToggleModule,
-        MatExpansionModule,
-        MatBadgeModule
-    ]
+    CommonModule,
+    GeolocationRoutingModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatCardModule,
+    MatTooltipModule,
+    MatTabsModule,
+    MatChipsModule,
+    MatListModule,
+    MatCheckboxModule,
+    MatSlideToggleModule,
+    MatExpansionModule,
+    MatBadgeModule,
+    MatProgressSpinner
+]
 })
 export class GeolocationModule { }

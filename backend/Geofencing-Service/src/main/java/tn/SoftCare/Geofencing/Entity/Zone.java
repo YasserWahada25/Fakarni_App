@@ -13,4 +13,7 @@ public class Zone {
     private double centreLat;
     private double centreLon;
     private double rayon;
+
+    @Enumerated(EnumType.STRING)
+    private ZoneType type;
 }

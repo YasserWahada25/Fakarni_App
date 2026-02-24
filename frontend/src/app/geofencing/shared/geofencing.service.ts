@@ -1,69 +1,113 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, interval, switchMap, shareReplay, of } from 'rxjs';
 
 export interface Zone {
     id: number;
-    name: string;
-    status: 'Safe' | 'Risk' | 'Restricted';
-    coordinates: string; // Formatting for mock display
+    nomZone: string;
+    patientId: string;
+    centreLat: number;
+    centreLon: number;
+    rayon: number;
+    type: string;
 }
 
-export interface PatientLocation {
+export interface PatientPosition {
     id: number;
-    name: string;
-    status: 'Safe' | 'Warning' | 'Critical';
-    lastUpdate: Date;
-    currentZoneId: number;
-    coordinates: { lat: number, lng: number };
+    patientId: string;
+    latitude: number;
+    longitude: number;
+    timestamp: string;
 }
 
 export interface Alert {
     id: number;
-    patientId: number;
+    patientId: string;
     patientName: string;
-    type: 'Zone Exit' | 'Abnormal Movement' | 'Low Battery';
-    timestamp: Date;
+    type: string;
+    timestamp: string;
     status: 'Active' | 'Resolved';
     severity: 'High' | 'Medium' | 'Low';
+    distanceHorsZone: number;
 }
 
-@Injectable({
-    providedIn: 'root'
-})
+export interface PatientLocation {
+    patientId: number;
+    patientName: string;
+    currentPosition: { lat: number; lng: number };
+    lastUpdate: Date;
+    isTracking: boolean;
+}
+
+@Injectable({ providedIn: 'root' })
 export class GeofencingService {
-    // Mock Data
-    private zones: Zone[] = [
-        { id: 1, name: 'Home Garden', status: 'Safe', coordinates: '34.0522° N, 118.2437° W' },
-        { id: 2, name: 'Neighborhood Park', status: 'Safe', coordinates: '34.0530° N, 118.2420° W' },
-        { id: 3, name: 'Busy Road Intersection', status: 'Restricted', coordinates: '34.0545° N, 118.2410° W' }
+
+    private gateway       = 'http://localhost:8090';
+    private geofencingApi = `${this.gateway}/api/geofencing`;
+    private trackingApi   = `${this.gateway}/api/tracking`;
+
+    // Headers explicites pour éviter les problèmes CORS
+    private headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    private patientLocations: PatientLocation[] = [
+        { patientId: 1, patientName: 'Ahmed Ben Ali', currentPosition: { lat: 36.8070, lng: 10.1820 }, lastUpdate: new Date(), isTracking: true },
+        { patientId: 2, patientName: 'Fatma Zahra',   currentPosition: { lat: 36.8105, lng: 10.1905 }, lastUpdate: new Date(), isTracking: true }
     ];
 
-    private patients: PatientLocation[] = [
-        { id: 101, name: 'Alice Smith', status: 'Safe', lastUpdate: new Date(), currentZoneId: 1, coordinates: { lat: 34.0522, lng: -118.2437 } },
-        { id: 102, name: 'Bob Jones', status: 'Warning', lastUpdate: new Date(), currentZoneId: 0, coordinates: { lat: 34.0540, lng: -118.2425 } }
-    ];
+    constructor(private http: HttpClient) {}
 
-    private alerts: Alert[] = [
-        { id: 501, patientId: 102, patientName: 'Bob Jones', type: 'Zone Exit', timestamp: new Date(), status: 'Active', severity: 'High' },
-        { id: 502, patientId: 101, patientName: 'Alice Smith', type: 'Low Battery', timestamp: new Date(Date.now() - 3600000), status: 'Resolved', severity: 'Low' }
-    ];
+    // ─── ZONES ───────────────────────────────────────────────────
 
     getZones(): Observable<Zone[]> {
-        return of(this.zones);
+        return this.http.get<Zone[]>(`${this.geofencingApi}/zones`);
     }
 
-    getPatients(): Observable<PatientLocation[]> {
-        return of(this.patients);
+    createZone(zone: Partial<Zone>): Observable<Zone> {
+        return this.http.post<Zone>(`${this.geofencingApi}/zone`, zone, { headers: this.headers });
     }
+
+    updateZone(id: number, zone: Partial<Zone>): Observable<Zone> {
+        return this.http.put<Zone>(`${this.geofencingApi}/zone/${id}`, zone, { headers: this.headers });
+    }
+
+    deleteZone(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.geofencingApi}/zone/${id}`);
+    }
+
+    // ─── ALERTES ─────────────────────────────────────────────────
 
     getAlerts(): Observable<Alert[]> {
-        return of(this.alerts);
+        return this.http.get<Alert[]>(`${this.geofencingApi}/alerts`);
     }
 
-    resolveAlert(alertId: number): void {
-        const alert = this.alerts.find(a => a.id === alertId);
-        if (alert) {
-            alert.status = 'Resolved';
-        }
+    getAlertsRealtime(): Observable<Alert[]> {
+        return interval(5000).pipe(
+            switchMap(() => this.getAlerts()),
+            shareReplay(1)
+        );
+    }
+
+    resolveAlert(alertId: number): Observable<Alert> {
+        return this.http.put<Alert>(`${this.geofencingApi}/alerts/${alertId}/resolve`, {}, { headers: this.headers });
+    }
+
+    // ─── TRACKING réel ────────────────────────────────────────────
+
+    getLastPosition(patientId: string): Observable<PatientPosition> {
+        return this.http.get<PatientPosition>(`${this.trackingApi}/last/${patientId}`);
+    }
+
+    getAllLastPositions(): Observable<PatientPosition[]> {
+        return this.http.get<PatientPosition[]>(`${this.trackingApi}/last`);
+    }
+
+    sendPosition(position: { patientId: string; latitude: number; longitude: number }): Observable<PatientPosition> {
+        return this.http.post<PatientPosition>(`${this.trackingApi}/add`, position, { headers: this.headers });
+    }
+
+    // ─── TRACKING simulé ──────────────────────────────────────────
+
+    getPatientLocations(): Observable<PatientLocation[]> {
+        return of(this.patientLocations);
     }
 }

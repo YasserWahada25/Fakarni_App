@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { GeofencingService, Alert } from '../shared/geofencing.service';
 
 @Component({
@@ -10,27 +11,36 @@ import { GeofencingService, Alert } from '../shared/geofencing.service';
     templateUrl: './alerts-history.component.html',
     styleUrl: './alerts-history.component.css'
 })
-export class AlertsHistoryComponent implements OnInit {
+export class AlertsHistoryComponent implements OnInit, OnDestroy {
     alerts: Alert[] = [];
     filteredAlerts: Alert[] = [];
     filterType: string = 'All';
     filterStatus: string = 'All';
+    isLoading = true;
+    errorMsg = '';
 
-    // Notification Settings
-    settings = {
-        smsEnabled: true,
-        emailEnabled: false,
-        pushEnabled: true,
-        emergencyContact: '+1 555-0123'
-    };
+    private sub!: Subscription;
 
-    constructor(private geofencingService: GeofencingService) { }
+    constructor(private geofencingService: GeofencingService) {}
 
     ngOnInit(): void {
-        this.geofencingService.getAlerts().subscribe(data => {
-            this.alerts = data;
-            this.applyFilters();
+        // Polling temps réel toutes les 5s
+        this.sub = this.geofencingService.getAlertsRealtime().subscribe({
+            next: (data) => {
+                this.alerts = data;
+                this.applyFilters();
+                this.isLoading = false;
+            },
+            error: (err) => {
+                this.errorMsg = 'Impossible de charger les alertes.';
+                this.isLoading = false;
+                console.error(err);
+            }
         });
+    }
+
+    ngOnDestroy(): void {
+        this.sub?.unsubscribe(); // Évite les memory leaks
     }
 
     applyFilters(): void {
@@ -42,13 +52,14 @@ export class AlertsHistoryComponent implements OnInit {
     }
 
     resolveAlert(alert: Alert): void {
-        this.geofencingService.resolveAlert(alert.id);
-        // Refresh local data mock hack
-        alert.status = 'Resolved';
-        this.applyFilters();
-    }
-
-    saveSettings(): void {
-        alert('Notification settings saved!');
+        this.geofencingService.resolveAlert(alert.id).subscribe({
+            next: (updated) => {
+                // Mise à jour locale immédiate sans attendre le polling
+                const idx = this.alerts.findIndex(a => a.id === updated.id);
+                if (idx !== -1) this.alerts[idx] = updated;
+                this.applyFilters();
+            },
+            error: (err) => console.error('Erreur résolution alerte:', err)
+        });
     }
 }
