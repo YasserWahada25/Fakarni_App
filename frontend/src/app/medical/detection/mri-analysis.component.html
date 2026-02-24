@@ -1,7 +1,7 @@
 <div class="mri-root">
 
   <!-- ══════════════════════════════════════════════════════
-       MODALE DE REJET IRM
+       MODALE DE REJET — affichée AUTOMATIQUEMENT si non-IRM
   ══════════════════════════════════════════════════════ -->
   <div class="modal-backdrop" *ngIf="showRejectionModal" (click)="closeRejectionModal()">
     <div class="modal-box" (click)="$event.stopPropagation()">
@@ -115,7 +115,7 @@
   ══════════════════════════════════════════════════════ -->
   <div class="workspace">
 
-    <!-- LEFT PANEL -->
+    <!-- ════════════════════ LEFT PANEL ════════════════════ -->
     <div class="left-panel">
 
       <!-- Dossier patient -->
@@ -149,7 +149,7 @@
           </div>
         </div>
 
-        <!-- Score risque -->
+        <!-- Score risque global -->
         <div class="global-risk-block" *ngIf="patientAge && patientAge > 0">
           <div class="grb-header">
             <span class="grb-title">Indice de risque global</span>
@@ -196,21 +196,18 @@
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════
-           QUESTIONNAIRE CLINIQUE PRÉ-ANALYSE
-      ═══════════════════════════════════════════════ -->
+      <!-- Questionnaire clinique -->
       <div class="card questionnaire-card">
         <div class="card-label q-toggle" (click)="toggleQuestionnaire()">
           <i class="fa-solid fa-clipboard-list"></i>
           Questionnaire clinique pré-analyse
-          <span class="q-badge" *ngIf="questionnaireScore > 0" [style.background]="qScoreColor+'22'" [style.color]="qScoreColor" [style.border-color]="qScoreColor">
+          <span class="q-badge" *ngIf="questionnaireScore > 0"
+            [style.background]="qScoreColor+'22'" [style.color]="qScoreColor" [style.border-color]="qScoreColor">
             {{questionnaireScore}}/10
           </span>
           <i class="fa-solid q-chevron" [class.fa-chevron-up]="showQuestionnaire" [class.fa-chevron-down]="!showQuestionnaire"></i>
         </div>
-
         <div class="questionnaire-body" [class.q-open]="showQuestionnaire">
-          <!-- Étape 1 : Symptômes -->
           <div class="q-section">
             <div class="q-section-title"><span class="q-step">1</span> Symptômes rapportés</div>
             <div class="q-checkgrid">
@@ -221,8 +218,6 @@
               </label>
             </div>
           </div>
-
-          <!-- Étape 2 : Antécédents -->
           <div class="q-section">
             <div class="q-section-title"><span class="q-step">2</span> Antécédents médicaux</div>
             <div class="q-checkgrid">
@@ -233,8 +228,6 @@
               </label>
             </div>
           </div>
-
-          <!-- Étape 3 : Durée -->
           <div class="q-section">
             <div class="q-section-title"><span class="q-step">3</span> Durée des symptômes</div>
             <div class="q-radio-group">
@@ -246,8 +239,6 @@
               </label>
             </div>
           </div>
-
-          <!-- Résultat questionnaire -->
           <div class="q-result" *ngIf="questionnaireScore > 0" [style.border-color]="qScoreColor">
             <div class="q-result-left">
               <div class="q-result-score" [style.color]="qScoreColor">{{questionnaireScore}}<span>/10</span></div>
@@ -261,9 +252,7 @@
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════
-           VIEWER IRM
-      ═══════════════════════════════════════════════ -->
+      <!-- Viewer IRM -->
       <div class="card viewer-card">
         <div class="card-label">
           <i class="fa-solid fa-brain"></i> Imagerie IRM
@@ -277,7 +266,7 @@
           </div>
         </div>
 
-        <!-- Barre de contrôle upload + transformations -->
+        <!-- Upload + toolbar -->
         <div class="upload-row">
           <label class="upload-btn" for="mriUpload">
             <i class="fa-solid fa-arrow-up-from-bracket"></i>
@@ -285,7 +274,6 @@
           </label>
           <input id="mriUpload" type="file" accept="image/*" (change)="onFileSelected($event)" style="display:none">
 
-          <!-- Toolbar rotation/flip -->
           <div class="transform-bar" *ngIf="imageUrl && imageConfirmed">
             <button class="tbtn" (click)="rotateLeft()" title="Rotation -90°"><i class="fa-solid fa-rotate-left"></i></button>
             <button class="tbtn" (click)="rotateRight()" title="Rotation +90°"><i class="fa-solid fa-rotate-right"></i></button>
@@ -296,18 +284,20 @@
 
           <button class="btn-analyze"
             (click)="runAIAnalysis()"
-            [disabled]="!selectedFile || isAnalyzing || !imageConfirmed"
-            [class.btn-analyze-ready]="selectedFile && !isAnalyzing && imageConfirmed">
-            <span *ngIf="!isAnalyzing"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyser</span>
-            <span *ngIf="isAnalyzing"><i class="fa-solid fa-circle-notch fa-spin"></i> Analyse...</span>
+            [disabled]="!selectedFile || isAnalyzing || !imageConfirmed || isDetecting"
+            [class.btn-analyze-ready]="selectedFile && !isAnalyzing && !!imageConfirmed && !isDetecting">
+            <span *ngIf="isDetecting"><i class="fa-solid fa-circle-notch fa-spin"></i> Vérification…</span>
+            <span *ngIf="!isDetecting && !isAnalyzing"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyser</span>
+            <span *ngIf="!isDetecting && isAnalyzing"><i class="fa-solid fa-circle-notch fa-spin"></i> Analyse...</span>
           </button>
         </div>
 
-        <!-- Score qualité image -->
+        <!-- Barre qualité image -->
         <div class="quality-bar" *ngIf="imageQuality && imageConfirmed">
           <div class="qbar-row">
             <span class="qbar-label"><i class="fa-solid fa-star-half-stroke"></i> Qualité de l'image</span>
-            <span class="qbar-badge" [style.background]="imageQuality.color+'18'" [style.color]="imageQuality.color" [style.border-color]="imageQuality.color">
+            <span class="qbar-badge" [style.background]="imageQuality.color+'18'"
+              [style.color]="imageQuality.color" [style.border-color]="imageQuality.color">
               {{ imageQuality.label }}
             </span>
           </div>
@@ -323,13 +313,12 @@
           </div>
         </div>
 
-        <!-- ════ VIEWPORT SCAN SIMPLE ════ -->
+        <!-- ══ VIEWPORT SCAN SIMPLE ══ -->
         <div class="viewport" *ngIf="!compareMode"
           (mousedown)="startDrag($event)" (mousemove)="drag($event)"
           (mouseup)="endDrag()" (mouseleave)="endDrag()">
 
-          <div class="img-wrapper"
-            [style.transform]="getImgTransform()">
+          <div class="img-wrapper" [style.transform]="getImgTransform()">
             <img *ngIf="imageUrl" [src]="imageUrl" alt="IRM" draggable="false">
             <div *ngIf="!imageUrl" class="no-image">
               <svg viewBox="0 0 72 72" fill="none" width="72">
@@ -346,24 +335,21 @@
             </div>
           </div>
 
-          <!-- ════ OVERLAY DE CONFIRMATION IRM ════ -->
-          <div class="confirm-overlay" *ngIf="imageUrl && imageConfirmed === null">
-            <div class="confirm-box">
-              <div class="confirm-icon"><i class="fa-solid fa-circle-question"></i></div>
-              <h3>Cette image est-elle une IRM cérébrale ?</h3>
-              <p>Veuillez confirmer avant de lancer le diagnostic IA.</p>
-              <div class="confirm-actions">
-                <button class="btn-confirm-no" (click)="rejectImage()">
-                  <i class="fa-solid fa-xmark"></i> Non, changer l'image
-                </button>
-                <button class="btn-confirm-yes" (click)="confirmImage()">
-                  <i class="fa-solid fa-check"></i> Oui, c'est une IRM
-                </button>
+          <!-- ★ OVERLAY DÉTECTION AUTOMATIQUE — remplace la confirmation manuelle ★ -->
+          <div class="detecting-overlay" *ngIf="isDetecting">
+            <div class="detecting-box">
+              <div class="detecting-ring"><div class="detecting-ring-inner"></div></div>
+              <p class="detecting-title">Vérification automatique</p>
+              <p class="detecting-sub">Analyse des caractéristiques IRM…</p>
+              <div class="detecting-checks">
+                <span class="dchk"><i class="fa-solid fa-circle-notch fa-spin"></i> Niveaux de gris</span>
+                <span class="dchk"><i class="fa-solid fa-circle-notch fa-spin"></i> Fond sombre typique</span>
+                <span class="dchk"><i class="fa-solid fa-circle-notch fa-spin"></i> Contraste médical</span>
               </div>
             </div>
           </div>
 
-          <!-- Processing overlay -->
+          <!-- Overlay analyse IA -->
           <div *ngIf="isAnalyzing" class="processing-overlay">
             <div class="proc-inner">
               <div class="proc-ring"><div class="proc-ring-inner"></div></div>
@@ -377,7 +363,6 @@
             </div>
           </div>
 
-          <!-- Zoom -->
           <div class="zoom-bar">
             <button (click)="zoomIn()"><i class="fa-solid fa-plus"></i></button>
             <button (click)="zoom=1;panX=0;panY=0"><i class="fa-solid fa-compress"></i></button>
@@ -389,13 +374,11 @@
           </div>
         </div>
 
-        <!-- ════ VIEWPORT COMPARAISON AVANT/APRÈS ════ -->
+        <!-- ══ VIEWPORT COMPARAISON AVANT/APRÈS ══ -->
         <div class="compare-viewport" *ngIf="compareMode"
           (mousemove)="onSliderMove($event)"
           (mouseup)="isSliding=false"
           (mouseleave)="isSliding=false">
-
-          <!-- Image AVANT -->
           <div class="compare-img compare-before">
             <img *ngIf="compareUrl" [src]="compareUrl" alt="Scan précédent" draggable="false">
             <div *ngIf="!compareUrl" class="compare-empty">
@@ -404,26 +387,19 @@
               <input id="compareUpload" type="file" accept="image/*" (change)="onCompareFileSelected($event)" style="display:none">
             </div>
           </div>
-
-          <!-- Image APRÈS clippée -->
           <div class="compare-img compare-after" [style.clip-path]="'inset(0 0 0 '+sliderX+'%)'">
             <img *ngIf="imageUrl" [src]="imageUrl" alt="Scan actuel" draggable="false">
           </div>
-
-          <!-- Labels -->
           <div class="compare-label compare-label-left" *ngIf="compareUrl">
             <i class="fa-solid fa-clock-rotate-left"></i> Scan précédent
           </div>
           <div class="compare-label compare-label-right" *ngIf="imageUrl">
             <i class="fa-solid fa-star"></i> Scan actuel
           </div>
-
-          <!-- Curseur slider -->
           <div class="slider-divider" [style.left]="sliderX+'%'"
             (mousedown)="$event.preventDefault(); isSliding=true">
             <div class="slider-handle"><i class="fa-solid fa-left-right"></i></div>
           </div>
-
           <div class="compare-hint" *ngIf="!compareUrl">
             <i class="fa-solid fa-arrow-pointer"></i>
             Cliquez sur la zone gauche pour charger un scan précédent
@@ -433,7 +409,7 @@
       </div><!-- /viewer-card -->
     </div><!-- /left-panel -->
 
-    <!-- RIGHT PANEL -->
+    <!-- ════════════════════ RIGHT PANEL ════════════════════ -->
     <div class="right-panel">
 
       <!-- Stage Track -->
@@ -460,14 +436,16 @@
       <div *ngIf="!isAnalyzing && !analysisComplete" class="empty-state">
         <div class="empty-orb">
           <div class="orb-ring orb-r1"></div><div class="orb-ring orb-r2"></div><div class="orb-ring orb-r3"></div>
-          <i class="fa-solid fa-microscope orb-icon"></i>
+          <i class="fa-solid orb-icon"
+             [class.fa-spinner]="isDetecting" [class.fa-spin]="isDetecting"
+             [class.fa-microscope]="!isDetecting"></i>
         </div>
         <h3>
-          {{ imageUrl && imageConfirmed===null ? 'Confirmation requise' :
+          {{ isDetecting ? 'Vérification en cours…' :
              imageUrl && imageConfirmed ? 'Prêt à analyser' : 'Aucune image chargée' }}
         </h3>
         <p>
-          {{ imageUrl && imageConfirmed===null ? 'Confirmez que l\'image est bien une IRM cérébrale.' :
+          {{ isDetecting ? 'Analyse automatique du type d\'image IRM.' :
              imageUrl && imageConfirmed ? 'Remplissez le questionnaire, puis cliquez sur « Analyser ».' :
              'Sélectionnez une IRM et complétez le dossier patient.' }}
         </p>
@@ -490,14 +468,12 @@
           </div>
         </div>
 
-        <!-- Score questionnaire dans rapport -->
         <div class="q-report-chip" *ngIf="questionnaireScore>0" [style.border-color]="qScoreColor" [style.background]="qScoreColor+'0d'">
           <i class="fa-solid fa-clipboard-list" [style.color]="qScoreColor"></i>
           <span>Score clinique pré-analyse : <strong [style.color]="qScoreColor">{{questionnaireScore}}/10 — {{qScoreLabel}}</strong></span>
           <span class="q-rep-msg">{{qScoreMessage}}</span>
         </div>
 
-        <!-- Diagnostic -->
         <div class="diag-card" [ngClass]="getStageCssClass(analyseResult.prediction)">
           <div class="diag-icon-wrap"><i [class]="getStageIcon(analyseResult.prediction)"></i></div>
           <div class="diag-center">
@@ -511,7 +487,6 @@
           </div>
         </div>
 
-        <!-- Fusion score -->
         <div class="fusion-card" *ngIf="patientAge && patientAge>0">
           <div class="fusion-header">
             <i class="fa-solid fa-dna"></i>
@@ -541,7 +516,6 @@
           <p class="fusion-note">{{ getFusionInterpretation() }}</p>
         </div>
 
-        <!-- Timeline traitement -->
         <div class="progress-card">
           <div class="progress-header"><i class="fa-solid fa-chart-line"></i><span>Progression & suivi recommandé</span></div>
           <div class="treatment-timeline">
@@ -563,7 +537,6 @@
           </div>
         </div>
 
-        <!-- Confiance -->
         <div class="conf-card">
           <div class="conf-row">
             <span class="conf-label">Indice de confiance du modèle</span>
@@ -576,13 +549,11 @@
           <div class="conf-note"><i class="fa-solid fa-circle-info"></i> {{ getConfidenceNote(analyseResult.confidence) }}</div>
         </div>
 
-        <!-- Interprétation -->
         <div class="section-block">
           <div class="section-title"><i class="fa-solid fa-stethoscope"></i> Interprétation clinique</div>
           <p class="clinical-text">{{ getClinicalInterpretation(analyseResult.prediction, analyseResult.confidence) }}</p>
         </div>
 
-        <!-- Probabilités -->
         <div class="section-block">
           <div class="section-title"><i class="fa-solid fa-chart-bar"></i> Distribution des probabilités</div>
           <div class="prob-list">
@@ -599,7 +570,6 @@
           </div>
         </div>
 
-        <!-- Recommandations -->
         <div class="section-block">
           <div class="section-title"><i class="fa-solid fa-user-doctor"></i> Recommandations cliniques</div>
           <div class="rec-grid">

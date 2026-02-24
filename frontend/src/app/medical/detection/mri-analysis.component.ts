@@ -19,54 +19,58 @@ export class MriAnalysisComponent implements OnDestroy {
   patientGender = '';
 
   // ── Viewer / Image ──────────────────────────────────
-  imageUrl       = '';
+  imageUrl    = '';
   selectedFile: File | null = null;
   zoom  = 1; panX = 0; panY = 0;
   isDragging = false; startX = 0; startY = 0;
   rotationDeg = 0;
   flipH       = false;
 
-  // ── Image Confirmation ──────────────────────────────
-  imageConfirmed: boolean | null = null;   // null=en attente, true=confirmé, false=rejeté
-  showRejectionModal = false;
+  // ── Détection automatique IRM ───────────────────────
+  // null  = pas encore analysée
+  // true  = image reconnue comme IRM  → analyse autorisée
+  // false = image rejetée automatiquement → modale affichée
+  imageConfirmed: boolean | null = null;
+  isDetecting        = false;   // spinner pendant l'analyse pixel
+  showRejectionModal = false;   // modale rejet (déclenchée automatiquement)
 
-  // ── Image Quality ───────────────────────────────────
+  // ── Qualité image ────────────────────────────────────
   imageQuality: { score:number; grayscale:number; contrast:string; label:string; color:string } | null = null;
 
-  // ── Comparaison avant/après ─────────────────────────
+  // ── Comparaison avant/après ──────────────────────────
   compareMode  = false;
   compareFile: File | null = null;
   compareUrl   = '';
-  sliderX      = 50;       // position en %
+  sliderX      = 50;
   isSliding    = false;
 
-  // ── Analysis state ──────────────────────────────────
+  // ── État d'analyse ───────────────────────────────────
   isAnalyzing      = false;
   analysisComplete = false;
   errorMessage     = '';
   procStep         = 0;
   private procInterval: any;
 
-  // ── Result ──────────────────────────────────────────
+  // ── Résultat ─────────────────────────────────────────
   analyseResult: AnalyseIRMResponse | null = null;
 
-  // ── Risk scores ─────────────────────────────────────
-  ageRiskPct       = 0;
-  aiRiskPct        = 0;
-  globalRiskPct    = 0;
-  globalRiskColor  = '#9b8fef';
+  // ── Scores de risque ─────────────────────────────────
+  ageRiskPct        = 0;
+  aiRiskPct         = 0;
+  globalRiskPct     = 0;
+  globalRiskColor   = '#9b8fef';
   globalRiskMessage = '';
 
-  // ── Stage track ─────────────────────────────────────
+  // ── Stades ───────────────────────────────────────────
   stages = [
-    { label:'Normal',     icon:'fa-solid fa-shield-heart',           color:'#6ee7b7' },
-    { label:'Très léger', icon:'fa-solid fa-magnifying-glass-chart', color:'#a78bfa' },
-    { label:'Léger',      icon:'fa-solid fa-triangle-exclamation',   color:'#c084fc' },
-    { label:'Modéré',     icon:'fa-solid fa-circle-exclamation',     color:'#f87171' }
+    { label:'Normal',     icon:'fa-solid fa-shield-heart'          },
+    { label:'Très léger', icon:'fa-solid fa-magnifying-glass-chart'},
+    { label:'Léger',      icon:'fa-solid fa-triangle-exclamation'  },
+    { label:'Modéré',     icon:'fa-solid fa-circle-exclamation'    }
   ];
 
   // ── Questionnaire ────────────────────────────────────
-  showQuestionnaire = false;
+  showQuestionnaire  = false;
   questionnaire = {
     symptoms:    {} as Record<string,boolean>,
     antecedents: {} as Record<string,boolean>,
@@ -78,56 +82,52 @@ export class MriAnalysisComponent implements OnDestroy {
   qScoreMessage = '';
 
   symptomsList = [
-    { key:'memoire',     label:'Troubles de la mémoire',       icon:'fa-solid fa-brain'               },
-    { key:'confusion',   label:'Confusion / désorientation',   icon:'fa-solid fa-arrows-spin'         },
-    { key:'langage',     label:'Difficultés de langage',       icon:'fa-solid fa-comment-slash'       },
-    { key:'comportement',label:'Changements comportementaux',  icon:'fa-solid fa-person-burst'        },
-    { key:'depression',  label:'Dépression / anxiété',         icon:'fa-solid fa-face-sad-tear'       },
-    { key:'autonomie',   label:'Perte d\'autonomie (AVQ)',     icon:'fa-solid fa-wheelchair'          }
+    { key:'memoire',      label:'Troubles de la mémoire',      icon:'fa-solid fa-brain'          },
+    { key:'confusion',    label:'Confusion / désorientation',  icon:'fa-solid fa-arrows-spin'    },
+    { key:'langage',      label:'Difficultés de langage',      icon:'fa-solid fa-comment-slash'  },
+    { key:'comportement', label:'Changements comportementaux', icon:'fa-solid fa-person-burst'   },
+    { key:'depression',   label:'Dépression / anxiété',        icon:'fa-solid fa-face-sad-tear'  },
+    { key:'autonomie',    label:"Perte d'autonomie (AVQ)",     icon:'fa-solid fa-wheelchair'     }
   ];
 
   antecedentsList = [
-    { key:'familiaux',   label:'ATCD familiaux Alzheimer',     icon:'fa-solid fa-dna'                 },
-    { key:'avc',         label:'AVC ou AIT',                   icon:'fa-solid fa-bolt'                },
-    { key:'hta',         label:'Hypertension artérielle',      icon:'fa-solid fa-heart-pulse'         },
-    { key:'diabete',     label:'Diabète de type 2',            icon:'fa-solid fa-droplet'             },
-    { key:'depression2', label:'Dépression chronique',         icon:'fa-solid fa-cloud-rain'          },
-    { key:'tc',          label:'Traumatisme crânien',          icon:'fa-solid fa-head-side-cough'     }
+    { key:'familiaux',   label:'ATCD familiaux Alzheimer',  icon:'fa-solid fa-dna'              },
+    { key:'avc',         label:'AVC ou AIT',                icon:'fa-solid fa-bolt'             },
+    { key:'hta',         label:'Hypertension artérielle',   icon:'fa-solid fa-heart-pulse'      },
+    { key:'diabete',     label:'Diabète de type 2',         icon:'fa-solid fa-droplet'          },
+    { key:'depression2', label:'Dépression chronique',      icon:'fa-solid fa-cloud-rain'       },
+    { key:'tc',          label:'Traumatisme crânien',       icon:'fa-solid fa-head-side-cough'  }
   ];
 
   durationOptions = [
-    { value:'aucun',    label:'Aucun symptôme' },
-    { value:'lt6',      label:'Moins de 6 mois' },
-    { value:'6_12',     label:'6 à 12 mois' },
-    { value:'gt12',     label:'Plus de 12 mois' },
-    { value:'gt2ans',   label:'Plus de 2 ans' }
+    { value:'aucun',  label:'Aucun symptôme'    },
+    { value:'lt6',    label:'Moins de 6 mois'   },
+    { value:'6_12',   label:'6 à 12 mois'       },
+    { value:'gt12',   label:'Plus de 12 mois'   },
+    { value:'gt2ans', label:'Plus de 2 ans'      }
   ];
 
   constructor(private detectionService: DetectionService) {}
   ngOnDestroy() { this.clearProc(); }
 
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   //  QUESTIONNAIRE
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   toggleQuestionnaire() { this.showQuestionnaire = !this.showQuestionnaire; }
 
   computeQuestionnaireScore(): void {
     let score = 0;
-    // Symptômes : 1 pt chacun, max 6
-    this.symptomsList.forEach(s => { if (this.questionnaire.symptoms[s.key]) score++; });
-    // Antécédents : 0.5 pt chacun, max 3
+    this.symptomsList.forEach(s   => { if (this.questionnaire.symptoms[s.key])    score++;      });
     this.antecedentsList.forEach(a => { if (this.questionnaire.antecedents[a.key]) score += 0.5; });
-    // Durée : 0 / 0.5 / 1 / 1.5 / 2 pts
     const durMap: Record<string,number> = { aucun:0, lt6:0.5, '6_12':1, gt12:1.5, gt2ans:2 };
     score += durMap[this.questionnaire.duration] || 0;
 
-    this.questionnaireScore = Math.min(10, Math.round(score * 10) / 10);
-    this.questionnaireScore = parseFloat(this.questionnaireScore.toFixed(1));
+    this.questionnaireScore = parseFloat(Math.min(10, Math.round(score * 10) / 10).toFixed(1));
 
     if (this.questionnaireScore <= 2) {
       this.qScoreColor   = '#10b981';
       this.qScoreLabel   = 'Profil rassurant';
-      this.qScoreMessage = 'Peu de signes cliniques. L\'analyse IRM permettra de confirmer.';
+      this.qScoreMessage = "Peu de signes cliniques. L'analyse IRM permettra de confirmer.";
     } else if (this.questionnaireScore <= 4) {
       this.qScoreColor   = '#a78bfa';
       this.qScoreLabel   = 'Vigilance modérée';
@@ -143,128 +143,180 @@ export class MriAnalysisComponent implements OnDestroy {
     }
   }
 
-  // ══════════════════════════════════════════════════
-  //  IMAGE UPLOAD & CONFIRMATION
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
+  //  UPLOAD → DÉTECTION AUTOMATIQUE IRM
+  //  Aucune question posée au patient.
+  //  L'algorithme décide seul si c'est une IRM valide.
+  // ══════════════════════════════════════════════════════
   onFileSelected(e: Event): void {
     const input = e.target as HTMLInputElement;
     if (!input.files?.[0]) return;
 
-    this.selectedFile    = input.files[0];
-    this.imageConfirmed  = null;   // reset → demande de confirmation
-    this.imageQuality    = null;
-    this.analysisComplete = false;
-    this.analyseResult   = null;
-    this.errorMessage    = '';
-    this.rotationDeg     = 0;
-    this.flipH           = false;
+    // Reset complet
+    this.selectedFile       = input.files[0];
+    this.imageConfirmed     = null;
+    this.imageQuality       = null;
+    this.analysisComplete   = false;
+    this.analyseResult      = null;
+    this.errorMessage       = '';
+    this.rotationDeg        = 0;
+    this.flipH              = false;
     this.showRejectionModal = false;
+    this.isDetecting        = true;   // ← active le spinner de vérification
 
     const reader = new FileReader();
     reader.onload = (ev) => {
       this.imageUrl = ev.target?.result as string;
-      // Analyse qualité locale après chargement
-      this.analyzeImageQuality(this.imageUrl);
+      this.autoDetectMRI(this.imageUrl);  // ← détection pixel automatique
     };
     reader.readAsDataURL(this.selectedFile);
   }
 
-  confirmImage(): void  { this.imageConfirmed = true; }
-
-  rejectImage(): void {
-    this.imageConfirmed    = null;
-    this.showRejectionModal = true;
-  }
-
   closeRejectionModal(): void {
     this.showRejectionModal = false;
-    // Si l'image n'est pas encore confirmée, on efface
+    // Si rejet : on vide l'image pour forcer un nouvel upload
     if (this.imageConfirmed !== true) {
-      this.imageUrl    = '';
+      this.imageUrl     = '';
       this.selectedFile = null;
       this.imageQuality = null;
     }
   }
 
-  // ══════════════════════════════════════════════════
-  //  ANALYSE DE QUALITÉ D'IMAGE (canvas local)
-  //  Mesure : % pixels en niveaux de gris + écart-type
-  // ══════════════════════════════════════════════════
-  private analyzeImageQuality(dataUrl: string): void {
+  // ══════════════════════════════════════════════════════
+  //  ALGORITHME DE DÉTECTION IRM (canvas, sans serveur)
+  //
+  //  Calibré sur images réelles (120×120 px échantillon) :
+  //
+  //  PORTES DURES — toutes doivent passer, sinon rejet immédiat :
+  //    [G1] grayPct   >= 75%   IRM=100% | Logo coloré=47%  | Photo=10-40%
+  //    [G2] colorPct  <=  8%   IRM=  0% | Logo coloré=13%  | Photo=5-30%
+  //         (pixels avec delta RGB > 60 → couleurs vives)
+  //    [G3] highSatPct<=  5%   IRM=  0% | Logo coloré=65%  | Photo=20-70%
+  //         (saturation HSL > 0.5 → rouge, vert, bleu vif…)
+  //
+  //  SCORE CONFIRMATOIRE — requis >= 45 si les portes passent :
+  //    40% gris + 30% fond sombre + 15% contraste + 15% luminance
+  //    → IRM valide : ~97/100
+  //    → Radiographie, CT-scan, échographie : 55-85/100 → ACCEPTÉS
+  // ══════════════════════════════════════════════════════
+  private autoDetectMRI(dataUrl: string): void {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const size = 100;  // échantillon 100×100
-      canvas.width = size; canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      ctx.drawImage(img, 0, 0, size, size);
-      const data = ctx.getImageData(0, 0, size, size).data;
+      const SIZE   = 120;
+      canvas.width = SIZE; canvas.height = SIZE;
+      const ctx    = canvas.getContext('2d');
+      if (!ctx) { this.isDetecting = false; this.imageConfirmed = true; return; }
 
-      let grayCount = 0;
-      let totalLum  = 0;
+      ctx.drawImage(img, 0, 0, SIZE, SIZE);
+      const data = ctx.getImageData(0, 0, SIZE, SIZE).data;
+
+      let grayCount    = 0;   // delta RGB < 25  → quasi-gris
+      let coloredCount = 0;   // delta RGB > 60  → couleur vive (vert, rouge…)
+      let highSatCount = 0;   // sat HSL > 0.5   → couleur saturée
+      let darkCount    = 0;   // luminance < 40  → fond sombre IRM
+      let totalLum     = 0;
       const lums: number[] = [];
 
       for (let i = 0; i < data.length; i += 4) {
-        const r = data[i], g = data[i+1], b = data[i+2];
-        const lum = 0.299*r + 0.587*g + 0.114*b;
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        const lum    = 0.299 * r + 0.587 * g + 0.114 * b;
+        const maxC   = Math.max(r, g, b) / 255;
+        const minC   = Math.min(r, g, b) / 255;
+        const delta  = Math.max(r, g, b) - Math.min(r, g, b);         // 0–255
+        const lumHSL = (maxC + minC) / 2;
+        const sat    = maxC === minC ? 0
+          : (maxC - minC) / (1 - Math.abs(2 * lumHSL - 1) + 1e-9);   // 0–1
+
         totalLum += lum;
         lums.push(lum);
-        // Considéré "gris" si R≈G≈B (delta max 20)
-        const delta = Math.max(r,g,b) - Math.min(r,g,b);
-        if (delta < 20) grayCount++;
+        if (delta <  25) grayCount++;
+        if (delta >  60) coloredCount++;
+        if (sat   > 0.5) highSatCount++;
+        if (lum   <  40) darkCount++;
       }
 
-      const pixelCount  = lums.length;
-      const grayscalePct = Math.round((grayCount / pixelCount) * 100);
-      const avgLum      = totalLum / pixelCount;
+      const N            = lums.length;
+      const grayPct      = (grayCount    / N) * 100;
+      const coloredPct   = (coloredCount / N) * 100;
+      const highSatPct   = (highSatCount / N) * 100;
+      const darkPct      = (darkCount    / N) * 100;
+      const avgLum       = totalLum / N;
+      const variance     = lums.reduce((a, l) => a + (l - avgLum) ** 2, 0) / N;
+      const stdDev       = Math.sqrt(variance);
 
-      // Écart-type = indicateur de contraste
-      const variance    = lums.reduce((acc, l) => acc + Math.pow(l - avgLum, 2), 0) / pixelCount;
-      const stdDev      = Math.round(Math.sqrt(variance));
+      // ── Barre qualité UI (calculée avant la décision) ─
+      const qualityScore = Math.round(grayPct * 0.6 + Math.min(100, stdDev * 1.5) * 0.4);
+      let qlabel: string; let qcolor: string;
+      if      (qualityScore >= 70) { qlabel = 'Excellente'; qcolor = '#10b981'; }
+      else if (qualityScore >= 50) { qlabel = 'Bonne';      qcolor = '#a78bfa'; }
+      else if (qualityScore >= 30) { qlabel = 'Moyenne';    qcolor = '#f59e0b'; }
+      else                          { qlabel = 'Faible';     qcolor = '#f87171'; }
 
-      // Score : 60% niveaux de gris + 40% contraste normalisé
-      const contrastScore = Math.min(100, stdDev * 1.5);
-      const qualityScore  = Math.round(grayscalePct * 0.6 + contrastScore * 0.4);
-
-      let label: string; let color: string;
-      if (qualityScore >= 70)      { label = 'Excellente'; color = '#10b981'; }
-      else if (qualityScore >= 50) { label = 'Bonne';      color = '#a78bfa'; }
-      else if (qualityScore >= 30) { label = 'Moyenne';    color = '#f59e0b'; }
-      else                          { label = 'Faible';     color = '#f87171'; }
-
-      let contrastLabel: string;
-      if (stdDev >= 60)      contrastLabel = 'Élevé';
-      else if (stdDev >= 35) contrastLabel = 'Modéré';
-      else                   contrastLabel = 'Faible';
+      const contrastLabel = stdDev >= 60 ? 'Élevé' : stdDev >= 35 ? 'Modéré' : 'Faible';
 
       this.imageQuality = {
-        score: qualityScore,
-        grayscale: grayscalePct,
-        contrast: contrastLabel,
-        label,
-        color
+        score:     qualityScore,
+        grayscale: Math.round(grayPct),
+        contrast:  contrastLabel,
+        label:     qlabel,
+        color:     qcolor
       };
+
+      this.isDetecting = false;
+
+      // ══════════════════════════════════════════════════
+      //  DÉCISION AUTOMATIQUE
+      //
+      //  ÉTAPE 1 — Portes dures anti-couleur (toutes doivent passer)
+      //    [G1] Trop peu de pixels gris  → photo ou logo coloré
+      //    [G2] Trop de pixels colorés   → vert vif, rouge, etc.
+      //    [G3] Trop de haute saturation → couleur intense détectée
+      //
+      //  ÉTAPE 2 — Score confirmatoire >= 45
+      //    Assure un minimum de contraste et de fond sombre
+      //    typique d'une vraie image médicale
+      // ══════════════════════════════════════════════════
+      const passG1 = grayPct    >= 75;   // suffisamment gris
+      const passG2 = coloredPct <=  8;   // pas de couleurs vives
+      const passG3 = highSatPct <=  5;   // pas de saturation élevée
+
+      const grayScore     = Math.min(100, grayPct  * 1.2);
+      const darkScore     = Math.min(100, darkPct  * 2.5);
+      const contrastScore = Math.min(100, stdDev   * 1.6);
+      const lumScore      = avgLum < 120 ? Math.min(100, (120 - avgLum) * 1.2) : 0;
+      const mriScore      = Math.round(
+        grayScore * 0.40 + darkScore * 0.30 + contrastScore * 0.15 + lumScore * 0.15
+      );
+
+      const isValidMRI = passG1 && passG2 && passG3 && mriScore >= 45;
+
+      if (isValidMRI) {
+        this.imageConfirmed = true;
+      } else {
+        this.imageConfirmed     = false;
+        this.showRejectionModal = true;   // ← s'ouvre automatiquement
+      }
     };
     img.src = dataUrl;
   }
 
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   //  TRANSFORMATIONS IMAGE
-  // ══════════════════════════════════════════════════
-  rotateLeft()      { this.rotationDeg = (this.rotationDeg - 90 + 360) % 360; }
-  rotateRight()     { this.rotationDeg = (this.rotationDeg + 90) % 360; }
-  flipHorizontal()  { this.flipH = !this.flipH; }
-  resetTransform()  { this.rotationDeg = 0; this.flipH = false; this.zoom = 1; this.panX = 0; this.panY = 0; }
+  // ══════════════════════════════════════════════════════
+  rotateLeft()     { this.rotationDeg = (this.rotationDeg - 90 + 360) % 360; }
+  rotateRight()    { this.rotationDeg = (this.rotationDeg + 90) % 360; }
+  flipHorizontal() { this.flipH = !this.flipH; }
+  resetTransform() { this.rotationDeg = 0; this.flipH = false; this.zoom = 1; this.panX = 0; this.panY = 0; }
 
   getImgTransform(): string {
     const t = `translate(${this.panX}px,${this.panY}px) scale(${this.zoom}) rotate(${this.rotationDeg}deg)`;
     return this.flipH ? t + ' scaleX(-1)' : t;
   }
 
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   //  COMPARAISON AVANT / APRÈS
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   onCompareFileSelected(e: Event): void {
     const input = e.target as HTMLInputElement;
     if (!input.files?.[0]) return;
@@ -276,20 +328,17 @@ export class MriAnalysisComponent implements OnDestroy {
 
   onSliderMove(e: MouseEvent): void {
     if (!this.isSliding) return;
-    const el = (e.currentTarget as HTMLElement);
-    const rect = el.getBoundingClientRect();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const pct  = Math.max(5, Math.min(95, ((e.clientX - rect.left) / rect.width) * 100));
     this.sliderX = Math.round(pct);
   }
 
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   //  ANALYSE IA
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   runAIAnalysis(): void {
     if (!this.selectedFile || !this.imageConfirmed) {
-      this.errorMessage = !this.imageConfirmed
-        ? 'Confirmez d\'abord que l\'image est une IRM valide.'
-        : 'Veuillez sélectionner une image IRM.';
+      this.errorMessage = 'Veuillez sélectionner une image IRM valide.';
       return;
     }
     this.isAnalyzing      = true;
@@ -300,18 +349,19 @@ export class MriAnalysisComponent implements OnDestroy {
 
     this.detectionService.analyserIRM(this.selectedFile).subscribe({
       next: (result) => {
-        this.clearProc(); this.procStep = 5;
+        this.clearProc();
+        this.procStep  = 5;
         this.aiRiskPct = this.stageToAiRisk(result.prediction);
         setTimeout(() => {
-          this.analyseResult   = result;
-          this.isAnalyzing     = false;
+          this.analyseResult    = result;
+          this.isAnalyzing      = false;
           this.analysisComplete = true;
           this.computeGlobalRisk();
         }, 500);
       },
       error: () => {
         this.clearProc();
-        this.isAnalyzing = false;
+        this.isAnalyzing  = false;
         this.errorMessage = 'Analyse échouée. Vérifiez que le service backend est actif.';
       }
     });
@@ -325,20 +375,21 @@ export class MriAnalysisComponent implements OnDestroy {
   }
 
   resetAnalysis(): void {
-    this.analysisComplete = false; this.analyseResult = null;
-    this.selectedFile     = null;  this.imageUrl      = '';
-    this.imageConfirmed   = null;  this.imageQuality  = null;
-    this.compareUrl       = '';    this.compareFile   = null;
-    this.compareMode      = false; this.sliderX       = 50;
-    this.errorMessage     = '';    this.procStep      = 0;
-    this.aiRiskPct        = 0;     this.rotationDeg   = 0;
-    this.flipH            = false;
+    this.analysisComplete   = false; this.analyseResult      = null;
+    this.selectedFile       = null;  this.imageUrl           = '';
+    this.imageConfirmed     = null;  this.imageQuality       = null;
+    this.isDetecting        = false;
+    this.compareUrl         = '';    this.compareFile        = null;
+    this.compareMode        = false; this.sliderX            = 50;
+    this.errorMessage       = '';    this.procStep           = 0;
+    this.aiRiskPct          = 0;     this.rotationDeg        = 0;
+    this.flipH              = false;
     this.computeGlobalRisk();
   }
 
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   //  SCORES DE RISQUE
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   onAgeChange(): void {
     const age = this.patientAge || 0;
     if (age <= 0) { this.ageRiskPct = 0; this.computeGlobalRisk(); return; }
@@ -354,7 +405,7 @@ export class MriAnalysisComponent implements OnDestroy {
   }
 
   private stageToAiRisk(p: string): number {
-    return { Non_Demented:5, Very_Mild_Demented:35, Mild_Demented:65, Moderate_Demented:90 }[p] || 0;
+    return ({ Non_Demented:5, Very_Mild_Demented:35, Mild_Demented:65, Moderate_Demented:90 } as any)[p] || 0;
   }
 
   private computeGlobalRisk(): void {
@@ -362,27 +413,18 @@ export class MriAnalysisComponent implements OnDestroy {
       ? Math.round(this.aiRiskPct * 0.60 + this.ageRiskPct * 0.40)
       : this.ageRiskPct;
 
-    if (this.globalRiskPct <= 15) {
-      this.globalRiskColor   = '#6ee7b7';
-      this.globalRiskMessage = 'Risque global faible. Un suivi annuel standard est suffisant.';
-    } else if (this.globalRiskPct <= 35) {
-      this.globalRiskColor   = '#a78bfa';
-      this.globalRiskMessage = 'Risque modéré. Une surveillance neurologique rapprochée est recommandée.';
-    } else if (this.globalRiskPct <= 60) {
-      this.globalRiskColor   = '#c084fc';
-      this.globalRiskMessage = 'Risque élevé. Consultation spécialisée et bilan complémentaire nécessaires.';
-    } else {
-      this.globalRiskColor   = '#f87171';
-      this.globalRiskMessage = 'Risque très élevé. Prise en charge médicale urgente requise.';
-    }
+    if      (this.globalRiskPct <= 15) { this.globalRiskColor = '#6ee7b7'; this.globalRiskMessage = 'Risque global faible. Un suivi annuel standard est suffisant.'; }
+    else if (this.globalRiskPct <= 35) { this.globalRiskColor = '#a78bfa'; this.globalRiskMessage = 'Risque modéré. Une surveillance neurologique rapprochée est recommandée.'; }
+    else if (this.globalRiskPct <= 60) { this.globalRiskColor = '#c084fc'; this.globalRiskMessage = 'Risque élevé. Consultation spécialisée et bilan complémentaire nécessaires.'; }
+    else                                { this.globalRiskColor = '#f87171'; this.globalRiskMessage = 'Risque très élevé. Prise en charge médicale urgente requise.'; }
   }
 
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   //  EXPORT PDF
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   exportPDF(): void {
     if (!this.analyseResult) return;
-    const r = this.analyseResult;
+    const r     = this.analyseResult;
     const probs = this.getProbabilities(r);
     const recs  = this.getRecommendations(r.prediction);
     const steps = this.getTreatmentSteps(r.prediction);
@@ -393,20 +435,20 @@ export class MriAnalysisComponent implements OnDestroy {
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 body{font-family:'Nunito',sans-serif;color:#1e1b4b;background:#fff;margin:0;padding:32px;}
 .ph{display:flex;justify-content:space-between;border-bottom:2px solid #ede9fe;padding-bottom:16px;margin-bottom:24px;}
-.logo{font-size:1.4rem;font-weight:900;color:#7c3aed;} .logo span{color:#c084fc;}
+.logo{font-size:1.4rem;font-weight:900;color:#7c3aed;}.logo span{color:#c084fc;}
 .meta{text-align:right;font-size:0.78rem;color:#6b7280;}
 h2{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:#9ca3af;margin:20px 0 8px;border-bottom:1px solid #f3f4f6;padding-bottom:6px;}
 .db{background:#f5f3ff;border-left:5px solid #7c3aed;border-radius:8px;padding:14px 16px;margin-bottom:20px;}
-.dn{font-size:1.2rem;font-weight:800;color:#4c1d95;} .dd{font-size:0.85rem;color:#6d28d9;margin-top:4px;}
+.dn{font-size:1.2rem;font-weight:800;color:#4c1d95;}.dd{font-size:0.85rem;color:#6d28d9;margin-top:4px;}
 .rr{display:flex;gap:14px;margin-bottom:20px;}
 .rb{flex:1;background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;text-align:center;}
-.rv{font-size:1.5rem;font-weight:800;color:#7c3aed;} .rl{font-size:0.68rem;color:#9ca3af;text-transform:uppercase;}
+.rv{font-size:1.5rem;font-weight:800;color:#7c3aed;}.rl{font-size:0.68rem;color:#9ca3af;text-transform:uppercase;}
 .qb{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.82rem;}
 .pr{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:0.82rem;}
 .pb{flex:1;height:7px;background:#f3f4f6;border-radius:99px;overflow:hidden;}
 .pf{height:100%;border-radius:99px;}
 .ri{padding:10px 12px;background:#faf5ff;border-radius:7px;margin-bottom:8px;border-left:3px solid #a78bfa;}
-.rt{font-weight:700;font-size:0.82rem;color:#4c1d95;margin-bottom:3px;} .rd{font-size:0.75rem;color:#6b7280;}
+.rt{font-weight:700;font-size:0.82rem;color:#4c1d95;margin-bottom:3px;}.rd{font-size:0.75rem;color:#6b7280;}
 .si{display:flex;gap:10px;margin-bottom:10px;font-size:0.82rem;}
 .sd{width:16px;height:16px;border-radius:50%;flex-shrink:0;margin-top:2px;}
 .dis{background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:12px;font-size:0.73rem;color:#92400e;margin-top:24px;}
@@ -441,99 +483,99 @@ ${recs.map(rec=>`<div class="ri"><div class="rt">${rec.title} <span style="font-
 <div class="dis">⚠️ Ce rapport est généré par une IA à titre indicatif uniquement et ne remplace en aucun cas un diagnostic médical posé par un professionnel de santé qualifié.</div>
 </body></html>`;
 
-    const w = window.open('','_blank','width=820,height=900');
+    const w = window.open('', '_blank', 'width=820,height=900');
     if (!w) return;
     w.document.write(html); w.document.close(); w.focus();
     setTimeout(() => w.print(), 800);
   }
 
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   //  HELPERS
-  // ══════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════
   getRiskColor(c: string): string {
-    return { GREEN:'#10b981', YELLOW:'#a78bfa', ORANGE:'#c084fc', RED:'#f87171' }[c] || '#9b8fef';
+    return ({ GREEN:'#10b981', YELLOW:'#a78bfa', ORANGE:'#c084fc', RED:'#f87171' } as any)[c] || '#9b8fef';
   }
   getStageCssClass(p: string): string {
-    return { Non_Demented:'s-normal',Very_Mild_Demented:'s-vigilance',Mild_Demented:'s-concern',Moderate_Demented:'s-critical' }[p]||'';
+    return ({ Non_Demented:'s-normal', Very_Mild_Demented:'s-vigilance', Mild_Demented:'s-concern', Moderate_Demented:'s-critical' } as any)[p] || '';
   }
   getStageNumber(p: string): number {
-    return { Non_Demented:1,Very_Mild_Demented:2,Mild_Demented:3,Moderate_Demented:4 }[p]||0;
+    return ({ Non_Demented:1, Very_Mild_Demented:2, Mild_Demented:3, Moderate_Demented:4 } as any)[p] || 0;
   }
   getStageIcon(p: string): string {
-    return { Non_Demented:'fa-solid fa-shield-heart',Very_Mild_Demented:'fa-solid fa-magnifying-glass-chart',Mild_Demented:'fa-solid fa-triangle-exclamation',Moderate_Demented:'fa-solid fa-circle-exclamation' }[p]||'fa-solid fa-brain';
+    return ({ Non_Demented:'fa-solid fa-shield-heart', Very_Mild_Demented:'fa-solid fa-magnifying-glass-chart', Mild_Demented:'fa-solid fa-triangle-exclamation', Moderate_Demented:'fa-solid fa-circle-exclamation' } as any)[p] || 'fa-solid fa-brain';
   }
   getStageDescription(p: string): string {
-    return { Non_Demented:'Aucun déclin cognitif significatif détecté',Very_Mild_Demented:'Modifications précoces subtiles, surveillance recommandée',Mild_Demented:'Déclin cognitif léger nécessitant un suivi clinique',Moderate_Demented:'Démence modérée — orientation spécialisée urgente' }[p]||'';
+    return ({ Non_Demented:'Aucun déclin cognitif significatif détecté', Very_Mild_Demented:'Modifications précoces subtiles, surveillance recommandée', Mild_Demented:'Déclin cognitif léger nécessitant un suivi clinique', Moderate_Demented:'Démence modérée — orientation spécialisée urgente' } as any)[p] || '';
   }
   getClinicalInterpretation(p: string, conf: number): string {
-    const lvl = conf>=90?'haute fiabilité diagnostique':conf>=75?'fiabilité modérée':'indication préliminaire';
-    return { Non_Demented:`L'analyse ne révèle aucun signe de déclin cognitif (${lvl}). Les patterns corticaux sont cohérents avec une morphologie normale pour l'âge. Un suivi annuel est conseillé.`,Very_Mild_Demented:`L'analyse identifie des modifications subtiles compatibles avec un déclin très léger (${lvl}). Une intervention précoce et un suivi longitudinal sont fortement recommandés.`,Mild_Demented:`Les résultats sont compatibles avec une démence légère (${lvl}). Des patterns d'atrophie corticale suggèrent une neurodégénérescence progressive. Une évaluation complète est recommandée rapidement.`,Moderate_Demented:`L'imagerie présente des marqueurs significatifs de démence modérée (${lvl}). Des modifications structurelles importantes sont visibles. Une orientation urgente vers une équipe spécialisée est indiquée.` }[p]||'Analyse terminée. Consultez un spécialiste.';
+    const lvl = conf >= 90 ? 'haute fiabilité diagnostique' : conf >= 75 ? 'fiabilité modérée' : 'indication préliminaire';
+    return ({ Non_Demented:`L'analyse ne révèle aucun signe de déclin cognitif (${lvl}). Les patterns corticaux sont cohérents avec une morphologie normale pour l'âge. Un suivi annuel est conseillé.`, Very_Mild_Demented:`L'analyse identifie des modifications subtiles compatibles avec un déclin très léger (${lvl}). Une intervention précoce et un suivi longitudinal sont fortement recommandés.`, Mild_Demented:`Les résultats sont compatibles avec une démence légère (${lvl}). Des patterns d'atrophie corticale suggèrent une neurodégénérescence progressive. Une évaluation complète est recommandée rapidement.`, Moderate_Demented:`L'imagerie présente des marqueurs significatifs de démence modérée (${lvl}). Des modifications structurelles importantes sont visibles. Une orientation urgente vers une équipe spécialisée est indiquée.` } as any)[p] || 'Analyse terminée. Consultez un spécialiste.';
   }
   getConfidenceNote(conf: number): string {
-    if (conf>=90) return 'Résultat haute confiance — fortement fiable pour une revue clinique.';
-    if (conf>=75) return 'Confiance modérée — à corroborer avec une évaluation clinique.';
+    if (conf >= 90) return 'Résultat haute confiance — fortement fiable pour une revue clinique.';
+    if (conf >= 75) return 'Confiance modérée — à corroborer avec une évaluation clinique.';
     return 'Confiance faible — imagerie complémentaire recommandée.';
   }
   getFusionInterpretation(): string {
     const g = this.globalRiskPct;
-    if (g<=15) return 'Score combiné faible. La concordance entre le profil d\'âge et le résultat IA est rassurante.';
-    if (g<=35) return 'Score modéré. L\'interaction entre l\'âge et le résultat IA justifie un suivi renforcé.';
-    if (g<=60) return 'Score préoccupant. La convergence du risque épidémiologique et de l\'IA recommande une prise en charge rapide.';
-    return 'Score critique. La concordance entre l\'âge et le stade IA nécessite une intervention médicale immédiate.';
+    if (g <= 15) return "Score combiné faible. La concordance entre le profil d'âge et le résultat IA est rassurante.";
+    if (g <= 35) return "Score modéré. L'interaction entre l'âge et le résultat IA justifie un suivi renforcé.";
+    if (g <= 60) return "Score préoccupant. La convergence du risque épidémiologique et de l'IA recommande une prise en charge rapide.";
+    return "Score critique. La concordance entre l'âge et le stade IA nécessite une intervention médicale immédiate.";
   }
   getProbabilities(r: AnalyseIRMResponse) {
     return [
-      { key:'Non_Demented',       label:'Non dément',               stage:'I',   value:r.probNonDemented,       color:'#10b981' },
-      { key:'Very_Mild_Demented', label:'Très légèrement dément',   stage:'II',  value:r.probVeryMildDemented,  color:'#a78bfa' },
-      { key:'Mild_Demented',      label:'Légèrement dément',        stage:'III', value:r.probMildDemented,       color:'#c084fc' },
-      { key:'Moderate_Demented',  label:'Modérément dément',        stage:'IV',  value:r.probModerateDemented,   color:'#f87171' }
+      { key:'Non_Demented',       label:'Non dément',             stage:'I',   value: r.probNonDemented,      color:'#10b981' },
+      { key:'Very_Mild_Demented', label:'Très légèrement dément', stage:'II',  value: r.probVeryMildDemented, color:'#a78bfa' },
+      { key:'Mild_Demented',      label:'Légèrement dément',      stage:'III', value: r.probMildDemented,     color:'#c084fc' },
+      { key:'Moderate_Demented',  label:'Modérément dément',      stage:'IV',  value: r.probModerateDemented, color:'#f87171' }
     ];
   }
-  getTreatmentSteps(p: string): {title:string;detail:string;timing:string;status:'done'|'current'|'upcoming'}[] {
+  getTreatmentSteps(p: string): { title:string; detail:string; timing:string; status:'done'|'current'|'upcoming' }[] {
     const n = this.getStageNumber(p);
     return [
-      { title:'Analyse IRM initiale',       detail:'Imagerie cérébrale et rapport IA.',             timing:'Aujourd\'hui', status:'done' },
-      { title:'Consultation neurologique',  detail:'Premier bilan spécialisé.',                     timing:'< 4 sem.',     status:n>=2?'current':'upcoming' },
-      { title:'Bilan neuropsychologique',   detail:'Tests cognitifs MMSE, MoCA.',                   timing:'1–2 mois',     status:n>=3?'current':'upcoming' },
-      { title:'Plan thérapeutique',         detail:'Traitement médicamenteux et plan de soins.',    timing:'2–3 mois',     status:n>=4?'current':'upcoming' },
-      { title:'IRM de contrôle',            detail:'Suivi évolutif et réévaluation du stade.',      timing:n<=1?'12 mois':n<=2?'6 mois':'3 mois', status:'upcoming' }
+      { title:'Analyse IRM initiale',      detail:'Imagerie cérébrale et rapport IA.',          timing:"Aujourd'hui", status:'done'                       },
+      { title:'Consultation neurologique', detail:'Premier bilan spécialisé.',                   timing:'< 4 sem.',    status: n >= 2 ? 'current':'upcoming' },
+      { title:'Bilan neuropsychologique',  detail:'Tests cognitifs MMSE, MoCA.',                 timing:'1–2 mois',    status: n >= 3 ? 'current':'upcoming' },
+      { title:'Plan thérapeutique',        detail:'Traitement médicamenteux et plan de soins.',  timing:'2–3 mois',    status: n >= 4 ? 'current':'upcoming' },
+      { title:'IRM de contrôle',           detail:'Suivi évolutif et réévaluation du stade.',   timing: n <= 1 ? '12 mois' : n <= 2 ? '6 mois' : '3 mois', status:'upcoming' }
     ];
   }
-  getRecommendations(p: string): {icon:string;title:string;detail:string;urgency:string;urgencyLabel:string}[] {
-    const map: Record<string,any[]> = {
-      Non_Demented:[
-        {icon:'fa-solid fa-calendar-check',title:'Suivi annuel',detail:'Bilan cognitif de routine dans 12 mois.',urgency:'routine',urgencyLabel:'Routine'},
-        {icon:'fa-solid fa-heart-pulse',title:'Hygiène de vie',detail:'Activité physique régulière et stimulation cognitive.',urgency:'routine',urgencyLabel:'Routine'}
+  getRecommendations(p: string): { icon:string; title:string; detail:string; urgency:string; urgencyLabel:string }[] {
+    const map: Record<string, any[]> = {
+      Non_Demented: [
+        { icon:'fa-solid fa-calendar-check', title:'Suivi annuel',  detail:'Bilan cognitif de routine dans 12 mois.',                        urgency:'routine',   urgencyLabel:'Routine'  },
+        { icon:'fa-solid fa-heart-pulse',    title:'Hygiène de vie',detail:'Activité physique régulière et stimulation cognitive.',           urgency:'routine',   urgencyLabel:'Routine'  }
       ],
-      Very_Mild_Demented:[
-        {icon:'fa-solid fa-calendar-clock',title:'Réévaluation 6 mois',detail:'IRM et tests neuropsychologiques dans 6 mois.',urgency:'scheduled',urgencyLabel:'Planifié'},
-        {icon:'fa-solid fa-brain',title:'Bilan cognitif',detail:'Batterie MMSE et MoCA validée.',urgency:'scheduled',urgencyLabel:'Planifié'},
-        {icon:'fa-solid fa-person-walking',title:'Programme préventif',detail:'Stimulation cognitive et activité physique structurée.',urgency:'routine',urgencyLabel:'Routine'}
+      Very_Mild_Demented: [
+        { icon:'fa-solid fa-calendar-clock', title:'Réévaluation 6 mois', detail:'IRM et tests neuropsychologiques dans 6 mois.',            urgency:'scheduled', urgencyLabel:'Planifié' },
+        { icon:'fa-solid fa-brain',          title:'Bilan cognitif',       detail:'Batterie MMSE et MoCA validée.',                           urgency:'scheduled', urgencyLabel:'Planifié' },
+        { icon:'fa-solid fa-person-walking', title:'Programme préventif',  detail:'Stimulation cognitive et activité physique structurée.',   urgency:'routine',   urgencyLabel:'Routine'  }
       ],
-      Mild_Demented:[
-        {icon:'fa-solid fa-user-doctor',title:'Neurologie urgente',detail:'Consultation spécialisée sous 4 semaines.',urgency:'urgent',urgencyLabel:'Urgent'},
-        {icon:'fa-solid fa-pills',title:'Traitement médical',detail:'Évaluation des inhibiteurs de cholinestérase.',urgency:'urgent',urgencyLabel:'Urgent'},
-        {icon:'fa-solid fa-house-medical',title:'Plan de soins',detail:'Soutien familial et coordination des aidants.',urgency:'scheduled',urgencyLabel:'Planifié'}
+      Mild_Demented: [
+        { icon:'fa-solid fa-user-doctor',  title:'Neurologie urgente', detail:'Consultation spécialisée sous 4 semaines.',                   urgency:'urgent',    urgencyLabel:'Urgent'   },
+        { icon:'fa-solid fa-pills',        title:'Traitement médical', detail:'Évaluation des inhibiteurs de cholinestérase.',                urgency:'urgent',    urgencyLabel:'Urgent'   },
+        { icon:'fa-solid fa-house-medical',title:'Plan de soins',      detail:'Soutien familial et coordination des aidants.',               urgency:'scheduled', urgencyLabel:'Planifié' }
       ],
-      Moderate_Demented:[
-        {icon:'fa-solid fa-hospital',title:'Évaluation immédiate',detail:'Consultation neurologique urgente 1–2 semaines.',urgency:'critical',urgencyLabel:'Critique'},
-        {icon:'fa-solid fa-shield-halved',title:'Évaluation sécurité',detail:'Autonomie, AVQ et besoins de supervision.',urgency:'critical',urgencyLabel:'Critique'},
-        {icon:'fa-solid fa-people-roof',title:'Équipe pluridisciplinaire',detail:'Neurologue, gériatre, travailleur social, aidants.',urgency:'urgent',urgencyLabel:'Urgent'}
+      Moderate_Demented: [
+        { icon:'fa-solid fa-hospital',     title:'Évaluation immédiate',    detail:'Consultation neurologique urgente 1–2 semaines.',         urgency:'critical',  urgencyLabel:'Critique' },
+        { icon:'fa-solid fa-shield-halved',title:'Évaluation sécurité',     detail:'Autonomie, AVQ et besoins de supervision.',               urgency:'critical',  urgencyLabel:'Critique' },
+        { icon:'fa-solid fa-people-roof',  title:'Équipe pluridisciplinaire',detail:'Neurologue, gériatre, travailleur social, aidants.',     urgency:'urgent',    urgencyLabel:'Urgent'   }
       ]
     };
-    return map[p]||[];
+    return map[p] || [];
   }
   formatPrediction(p: string): string {
-    return { Non_Demented:'Non dément',Very_Mild_Demented:'Très légèrement dément',Mild_Demented:'Légèrement dément',Moderate_Demented:'Modérément dément' }[p]||p?.replace(/_/g,' ')||'';
+    return ({ Non_Demented:'Non dément', Very_Mild_Demented:'Très légèrement dément', Mild_Demented:'Légèrement dément', Moderate_Demented:'Modérément dément' } as any)[p] || p?.replace(/_/g,' ') || '';
   }
   formatDate(): string {
-    return new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+    return new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
   }
 
-  // ── Drag/Zoom ──────────────────────────────────────
-  startDrag(e:MouseEvent){this.isDragging=true;this.startX=e.clientX-this.panX;this.startY=e.clientY-this.panY;}
-  drag(e:MouseEvent){if(!this.isDragging)return;e.preventDefault();this.panX=e.clientX-this.startX;this.panY=e.clientY-this.startY;}
-  endDrag(){this.isDragging=false;}
-  zoomIn(){this.zoom=Math.min(this.zoom+0.5,5);}
-  zoomOut(){this.zoom=Math.max(this.zoom-0.5,1);if(this.zoom===1){this.panX=0;this.panY=0;}}
+  // ── Drag / Zoom ───────────────────────────────────────
+  startDrag(e: MouseEvent) { this.isDragging = true; this.startX = e.clientX - this.panX; this.startY = e.clientY - this.panY; }
+  drag(e: MouseEvent)      { if (!this.isDragging) return; e.preventDefault(); this.panX = e.clientX - this.startX; this.panY = e.clientY - this.startY; }
+  endDrag()                { this.isDragging = false; }
+  zoomIn()                 { this.zoom = Math.min(this.zoom + 0.5, 5); }
+  zoomOut()                { this.zoom = Math.max(this.zoom - 0.5, 1); if (this.zoom === 1) { this.panX = 0; this.panY = 0; } }
 }
