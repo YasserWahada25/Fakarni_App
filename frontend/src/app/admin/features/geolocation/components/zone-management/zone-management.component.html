@@ -1,5 +1,13 @@
 <div class="zone-management-container">
 
+  <!-- ══════ NAV TABS ══════ -->
+  <nav mat-tab-nav-bar class="nav-tabs">
+    <a mat-tab-link routerLink="../zones"      routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive">Zones Géographiques</a>
+    <a mat-tab-link routerLink="../alerts"     routerLinkActive #rla2="routerLinkActive" [active]="rla2.isActive">Alertes</a>
+    <a mat-tab-link routerLink="../statistics" routerLinkActive #rla3="routerLinkActive" [active]="rla3.isActive">Statistiques</a>
+  </nav>
+
+  <!-- reste de votre code existant... -->
   <!-- ══════════════ HEADER ══════════════ -->
   <div class="page-header">
     <div>

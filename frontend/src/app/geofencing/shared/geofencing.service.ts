@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, interval, switchMap, shareReplay, of } from 'rxjs';
+import { Observable, interval, timer,switchMap, shareReplay, of } from 'rxjs';
 
 export interface Zone {
     id: number;
@@ -76,12 +76,13 @@ export class GeofencingService {
 
     // ─── ALERTES ─────────────────────────────────────────────────
 
-    getAlerts(): Observable<Alert[]> {
+     getAlerts(): Observable<Alert[]> {
         return this.http.get<Alert[]>(`${this.geofencingApi}/alerts`);
     }
 
     getAlertsRealtime(): Observable<Alert[]> {
-        return interval(5000).pipe(
+        // timer(0, 5000) : premier appel immédiat, puis toutes les 5s
+        return timer(0, 5000).pipe(
             switchMap(() => this.getAlerts()),
             shareReplay(1)
         );

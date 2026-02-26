@@ -46,7 +46,7 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(109,40,217,.40);
+  box-shadow: 0 4px 16px rgba(175, 99, 241, 0.495);
   transition: transform .15s, box-shadow .15s;
 }
 .btn-primary:hover:not(:disabled) {

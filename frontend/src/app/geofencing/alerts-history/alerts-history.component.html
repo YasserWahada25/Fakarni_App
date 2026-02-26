@@ -1,96 +1,180 @@
 <div class="alerts-container">
-    <div class="alerts-section">
-        <div class="section-header">
-            <h2><i class="fa-solid fa-clock-rotate-left"></i> Alerts History</h2>
-            <div class="filters">
-                <select [(ngModel)]="filterType" (change)="applyFilters()">
-                    <option value="All">All Types</option>
-                    <option value="Zone Exit">Zone Exit</option>
-                    <option value="Abnormal Movement">Abnormal Movement</option>
-                    <option value="Low Battery">Low Battery</option>
-                </select>
-                <select [(ngModel)]="filterStatus" (change)="applyFilters()">
-                    <option value="All">All Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Resolved">Resolved</option>
-                </select>
-            </div>
+
+  <!-- ════ LEFT — Alerts History ════ -->
+  <div class="alerts-section">
+
+    <div class="section-header">
+      <h2><i class="fa-solid fa-clock-rotate-left"></i> Alerts History</h2>
+      <div class="header-right">
+        <!-- Mini stats -->
+        <div class="mini-stats" *ngIf="!isLoading && !errorMsg">
+          <span class="mini-stat active-stat">🔴 {{ activeCount }} Active</span>
+          <span class="mini-stat resolved-stat">🟢 {{ resolvedCount }} Resolved</span>
         </div>
-
-        <!-- État de chargement -->
-        <div class="loading-state" *ngIf="isLoading">
-            <i class="fa-solid fa-spinner fa-spin"></i> Chargement des alertes...
+        <!-- Filters -->
+        <div class="filters">
+          <select [(ngModel)]="filterType" (change)="applyFilters()">
+            <option value="All">All Types</option>
+            <option *ngFor="let t of alertTypes" [value]="t">{{ t }}</option>
+          </select>
+          <select [(ngModel)]="filterStatus" (change)="applyFilters()">
+            <option value="All">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Resolved">Resolved</option>
+          </select>
         </div>
-
-        <!-- Message d'erreur -->
-        <div class="error-state" *ngIf="errorMsg && !isLoading">
-            <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMsg }}
-        </div>
-
-        <!-- Tableau des alertes -->
-        <div class="table-responsive" *ngIf="!isLoading && !errorMsg">
-            <table class="alerts-table">
-                <thead>
-                    <tr>
-                        <th>Status</th>
-                        <th>Patient</th>
-                        <th>Type</th>
-                        <th>Time</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Aucune alerte trouvée -->
-                    <tr *ngIf="filteredAlerts.length === 0">
-                        <td colspan="5" class="no-data">
-                            <i class="fa-solid fa-inbox"></i> Aucune alerte trouvée.
-                        </td>
-                    </tr>
-
-                    <tr *ngFor="let alert of filteredAlerts"
-                        [class.active-row]="alert.status === 'Active'">
-                        <td>
-                            <span class="status-indicator" [ngClass]="alert.status.toLowerCase()">
-                                {{ alert.status }}
-                            </span>
-                        </td>
-                        <td>{{ alert.patientName }}</td>
-                        <td>
-                            <span class="type-badge"
-                                [class.danger]="alert.severity === 'High'"
-                                [class.warning]="alert.severity === 'Medium'">
-                                {{ alert.type }}
-                            </span>
-                        </td>
-                        <td>{{ alert.timestamp | date:'medium' }}</td>
-                        <td>
-                            <button *ngIf="alert.status === 'Active'"
-                                    class="resolve-btn"
-                                    (click)="resolveAlert(alert)">
-                                <i class="fa-solid fa-check"></i> Resolve
-                            </button>
-                            <span *ngIf="alert.status === 'Resolved'" class="resolved-text">
-                                <i class="fa-solid fa-check-double"></i> Done
-                            </span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Timeline des 3 dernières alertes -->
-        <div class="timeline-preview" *ngIf="alerts.length > 0 && !isLoading">
-            <h3>Recent Activity</h3>
-            <div class="timeline">
-                <div class="timeline-item" *ngFor="let alert of alerts | slice:0:3">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <span class="time">{{ alert.timestamp | date:'shortTime' }}</span>
-                        <p>{{ alert.type }} - {{ alert.patientName }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+      </div>
     </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="isLoading">
+      <i class="fa-solid fa-spinner fa-spin"></i> Loading alerts…
+    </div>
+
+    <!-- Error -->
+    <div class="error-state" *ngIf="errorMsg && !isLoading">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMsg }}
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive" *ngIf="!isLoading && !errorMsg">
+      <table class="alerts-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Patient</th>
+            <th>Type</th>
+            <th>Time</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredAlerts.length === 0">
+            <td colspan="5" class="no-data">
+              <i class="fa-solid fa-inbox"></i> No alerts found.
+            </td>
+          </tr>
+          <tr *ngFor="let alert of filteredAlerts" [class.active-row]="alert.status === 'Active'">
+            <td>
+              <span class="status-indicator" [ngClass]="alert.status.toLowerCase()">
+                {{ alert.status }}
+              </span>
+            </td>
+            <td>{{ alert.patientName }}</td>
+            <td>
+              <span class="type-badge"
+                    [class.danger]="alert.severity === 'High'"
+                    [class.warning]="alert.severity === 'Medium'">
+                {{ alert.type }}
+              </span>
+            </td>
+            <td>{{ formatDate(alert.timestamp) | date:'medium' }}</td>
+            <td>
+              <button *ngIf="alert.status === 'Active'" class="resolve-btn" (click)="resolveAlert(alert)">
+                <i class="fa-solid fa-check"></i> Resolve
+              </button>
+              <span *ngIf="alert.status === 'Resolved'" class="resolved-text">
+                <i class="fa-solid fa-check-double"></i> Done
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Recent Activity timeline -->
+    <div class="timeline-preview" *ngIf="recentAlerts.length > 0 && !isLoading">
+      <h3>Recent Activity</h3>
+      <div class="timeline">
+        <div class="timeline-item" *ngFor="let alert of recentAlerts">
+          <div class="timeline-dot" [class.dot-active]="alert.status === 'Active'"></div>
+          <div class="timeline-content">
+            <span class="time">{{ formatDate(alert.timestamp) | date:'shortTime' }}</span>
+            <p>{{ alert.type }} — {{ alert.patientName }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════ RIGHT — Notification Settings ════ -->
+  <div class="settings-section">
+
+    <h2><i class="fa-solid fa-bell"></i> Notification Settings</h2>
+
+    <!-- Success toast -->
+    <div class="toast-success" *ngIf="settingsSaved">
+      <i class="fa-solid fa-circle-check"></i> Preferences saved successfully!
+    </div>
+
+    <!-- Toggle switches -->
+    <!-- SMS -->
+    <div class="setting-group">
+      <label class="switch-label">
+        <div class="label-content">
+          <i class="fa-solid fa-comment-sms"></i>
+          <span>SMS Alerts</span>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" id="sms" [(ngModel)]="settings.smsEnabled" (change)="onSmsToggle()">
+          <label class="toggle" for="sms"></label>
+        </div>
+      </label>
+      <!-- Phone input appears when SMS is ON -->
+      <div class="sub-input" *ngIf="settings.smsEnabled">
+        <label><i class="fa-solid fa-phone"></i> Phone Number</label>
+        <input type="tel" [(ngModel)]="settings.phoneNumber"
+               placeholder="+216 XX XXX XXX"
+               [class.input-valid]="isPhoneValid()"
+               [class.input-error]="settings.phoneNumber && !isPhoneValid()" />
+        <span class="input-hint error" *ngIf="settings.phoneNumber && !isPhoneValid()">
+          ⚠️ Enter a valid phone number.
+        </span>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="setting-group">
+      <label class="switch-label">
+        <div class="label-content">
+          <i class="fa-solid fa-envelope"></i>
+          <span>Email Alerts</span>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" id="email" [(ngModel)]="settings.emailEnabled" (change)="onEmailToggle()">
+          <label class="toggle" for="email"></label>
+        </div>
+      </label>
+      <!-- Email input appears when Email is ON -->
+      <div class="sub-input" *ngIf="settings.emailEnabled">
+        <label><i class="fa-solid fa-at"></i> Email Address</label>
+        <input type="email" [(ngModel)]="settings.emailAddress"
+               placeholder="contact@example.com"
+               [class.input-valid]="isEmailValid()"
+               [class.input-error]="settings.emailAddress && !isEmailValid()" />
+        <span class="input-hint error" *ngIf="settings.emailAddress && !isEmailValid()">
+          ⚠️ Enter a valid email address.
+        </span>
+      </div>
+    </div>
+
+    <!-- Channels summary -->
+    <div class="channels-summary">
+      <span class="channel-chip" [class.on]="settings.smsEnabled">
+        <i class="fa-solid fa-comment-sms"></i> SMS {{ settings.smsEnabled ? 'ON' : 'OFF' }}
+      </span>
+      <span class="channel-chip" [class.on]="settings.emailEnabled">
+        <i class="fa-solid fa-envelope"></i> Email {{ settings.emailEnabled ? 'ON' : 'OFF' }}
+      </span>
+    </div>
+
+    <button class="save-btn" (click)="saveSettings()" [disabled]="isSavingSettings || !isFormValid()">
+      <i class="fa-solid fa-floppy-disk" *ngIf="!isSavingSettings"></i>
+      <i class="fa-solid fa-spinner fa-spin" *ngIf="isSavingSettings"></i>
+      {{ isSavingSettings ? 'Saving…' : 'Save Preferences' }}
+    </button>
+
+  </div>
+
 </div>
