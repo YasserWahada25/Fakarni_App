@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { User } from '../../../../core/models/user.model';
 import { UserService } from '../../../../core/services/user.service';
+import { ROLE_OPTIONS, Role } from '../../../../../auth/models/sign-up.model';
 
 @Component({
     selector: 'app-user-form',
@@ -12,7 +13,8 @@ import { UserService } from '../../../../core/services/user.service';
 })
 export class UserFormComponent {
     userForm: FormGroup;
-    isEditMode: boolean = false;
+    isEditMode: boolean;
+    roleOptions = ROLE_OPTIONS;
 
     constructor(
         private fb: FormBuilder,
@@ -22,30 +24,48 @@ export class UserFormComponent {
     ) {
         this.isEditMode = !!data;
         this.userForm = this.fb.group({
-            firstName: [data?.firstName || '', Validators.required],
-            lastName: [data?.lastName || '', Validators.required],
-            email: [data?.email || '', [Validators.required, Validators.email]],
-            role: [data?.role || 'patient', Validators.required],
-            // Password field only required for new users in this example, or optional for edit
+            nom: [data?.nom ?? '', Validators.required],
+            prenom: [data?.prenom ?? '', Validators.required],
+            email: [data?.email ?? '', [Validators.required, Validators.email]],
+            role: [data?.role ?? Role.PATIENT_PROFILE, Validators.required],
             password: ['', this.isEditMode ? [] : [Validators.required, Validators.minLength(6)]],
-            medicalInfo: [data?.medicalInfo || '']
+            numTel: [data?.numTel ?? ''],
+            adresse: [data?.adresse ?? ''],
         });
     }
 
     onSubmit(): void {
-        if (this.userForm.valid) {
-            const formValue = this.userForm.value;
+        if (!this.userForm.valid) return;
 
-            if (this.isEditMode && this.data) {
-                const updatedUser: User = { ...this.data, ...formValue };
-                this.userService.updateUser(updatedUser).subscribe(() => {
-                    this.dialogRef.close(true);
-                });
-            } else {
-                this.userService.addUser(formValue).subscribe(() => {
-                    this.dialogRef.close(true);
-                });
-            }
+        const v = this.userForm.value;
+
+        if (this.isEditMode && this.data) {
+            const body = {
+                nom: v.nom,
+                prenom: v.prenom,
+                email: v.email,
+                role: v.role,
+                numTel: v.numTel || undefined,
+                adresse: v.adresse || undefined,
+                ...(v.password ? { password: v.password } : {}),
+            };
+            this.userService.updateUser(this.data.id, body).subscribe({
+                next: () => this.dialogRef.close(true),
+                error: (err) => console.error('Update failed', err),
+            });
+        } else {
+            this.userService.addUser({
+                nom: v.nom,
+                prenom: v.prenom,
+                email: v.email,
+                password: v.password,
+                role: v.role,
+                numTel: v.numTel || undefined,
+                adresse: v.adresse || undefined,
+            }).subscribe({
+                next: () => this.dialogRef.close(true),
+                error: (err) => console.error('Create failed', err),
+            });
         }
     }
 

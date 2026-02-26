@@ -4,14 +4,14 @@
         <div class="form-row">
             <mat-form-field appearance="outline">
                 <mat-label>Nom</mat-label>
-                <input matInput formControlName="lastName" placeholder="Ex. Dupont">
-                <mat-error *ngIf="userForm.get('lastName')?.hasError('required')">Le nom est requis</mat-error>
+                <input matInput formControlName="nom" placeholder="Ex. Dupont">
+                <mat-error *ngIf="userForm.get('nom')?.hasError('required')">Le nom est requis</mat-error>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
                 <mat-label>Prénom</mat-label>
-                <input matInput formControlName="firstName" placeholder="Ex. Jean">
-                <mat-error *ngIf="userForm.get('firstName')?.hasError('required')">Le prénom est requis</mat-error>
+                <input matInput formControlName="prenom" placeholder="Ex. Jean">
+                <mat-error *ngIf="userForm.get('prenom')?.hasError('required')">Le prénom est requis</mat-error>
             </mat-form-field>
         </div>
 
@@ -22,28 +22,28 @@
             <mat-error *ngIf="userForm.get('email')?.hasError('required')">L'email est requis</mat-error>
         </mat-form-field>
 
-        <div class="form-row">
-            <mat-form-field appearance="outline">
-                <mat-label>Rôle</mat-label>
-                <mat-select formControlName="role">
-                    <mat-option value="admin">Administrateur</mat-option>
-                    <mat-option value="doctor">Médecin</mat-option>
-                    <mat-option value="caregiver">Aidant</mat-option>
-                    <mat-option value="patient">Patient</mat-option>
-                </mat-select>
-            </mat-form-field>
+        <mat-form-field appearance="outline">
+            <mat-label>Rôle</mat-label>
+            <mat-select formControlName="role">
+                <mat-option *ngFor="let opt of roleOptions" [value]="opt.value">{{ opt.label }}</mat-option>
+            </mat-select>
+        </mat-form-field>
 
-            <mat-form-field appearance="outline" *ngIf="!isEditMode || userForm.get('password')?.value">
-                <mat-label>Mot de passe</mat-label>
-                <input matInput formControlName="password" type="password">
-                <mat-error *ngIf="userForm.get('password')?.hasError('minlength')">6 caractères minimum</mat-error>
-                <mat-error *ngIf="userForm.get('password')?.hasError('required')">Requis pour nouveau compte</mat-error>
-            </mat-form-field>
-        </div>
+        <mat-form-field appearance="outline" *ngIf="!isEditMode || userForm.get('password')?.value">
+            <mat-label>Mot de passe</mat-label>
+            <input matInput formControlName="password" type="password" placeholder="6 caractères minimum">
+            <mat-error *ngIf="userForm.get('password')?.hasError('minlength')">6 caractères minimum</mat-error>
+            <mat-error *ngIf="userForm.get('password')?.hasError('required')">Requis pour un nouveau compte</mat-error>
+        </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Informations médicales</mat-label>
-            <textarea matInput formControlName="medicalInfo" rows="3"></textarea>
+            <mat-label>Téléphone</mat-label>
+            <input matInput formControlName="numTel" placeholder="Ex. 06 12 34 56 78">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Adresse</mat-label>
+            <textarea matInput formControlName="adresse" rows="2" placeholder="Adresse"></textarea>
         </mat-form-field>
     </form>
 </mat-dialog-content>

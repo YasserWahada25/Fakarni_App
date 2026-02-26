@@ -15,7 +15,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     styleUrls: ['./user-list.component.scss']
 })
 export class UserListComponent implements OnInit, AfterViewInit {
-    displayedColumns: string[] = ['lastName', 'firstName', 'role', 'status', 'lastLogin', 'actions'];
+    displayedColumns: string[] = ['nom', 'prenom', 'email', 'role', 'actions'];
     dataSource: MatTableDataSource<User>;
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -67,10 +67,11 @@ export class UserListComponent implements OnInit, AfterViewInit {
         });
     }
 
-    deleteUser(user: User) {
-        if (confirm(`Êtes-vous sûr de vouloir supprimer ${user.firstName} ${user.lastName} ?`)) {
-            this.userService.deleteUser(user.id).subscribe(() => {
-                this.loadUsers();
+    deleteUser(user: User): void {
+        if (confirm(`Êtes-vous sûr de vouloir supprimer ${user.prenom} ${user.nom} ?`)) {
+            this.userService.deleteUser(user.id).subscribe({
+                next: () => this.loadUsers(),
+                error: (err) => console.error('Delete failed', err)
             });
         }
     }
