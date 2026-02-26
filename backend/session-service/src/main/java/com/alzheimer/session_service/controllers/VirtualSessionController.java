@@ -6,9 +6,9 @@ import com.alzheimer.session_service.entities.SessionStatus;
 import com.alzheimer.session_service.entities.VirtualSession;
 import com.alzheimer.session_service.services.VirtualSessionService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -16,31 +16,35 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/session")
-
 public class VirtualSessionController {
 
-
     private final VirtualSessionService service;
-
 
     public VirtualSessionController(VirtualSessionService service) {
         this.service = service;
     }
+
     // ---- Sessions CRUD ----
 
     @PostMapping("/sessions")
-    public VirtualSession create(@Valid @RequestBody CreateSessionRequest req) {
-        return service.create(req);
+    public VirtualSession create(@AuthenticationPrincipal Jwt jwt,
+                                 @Valid @RequestBody CreateSessionRequest req) {
+        String userId = jwt.getSubject();
+        return service.create(req, userId);
     }
 
     @PutMapping("/sessions/{id}")
-    public VirtualSession update(@PathVariable Long id, @Valid @RequestBody UpdateSessionRequest req) {
-        return service.update(id, req);
+    public VirtualSession update(@AuthenticationPrincipal Jwt jwt,
+                                 @PathVariable Long id,
+                                 @Valid @RequestBody UpdateSessionRequest req) {
+        String userId = jwt.getSubject();
+        return service.update(id, req, userId);
     }
 
     @DeleteMapping("/sessions/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    public void delete(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
+        String userId = jwt.getSubject();
+        service.delete(id, userId);
     }
 
     @GetMapping("/sessions/{id}")
@@ -60,25 +64,30 @@ public class VirtualSessionController {
     // ---- Participants ----
 
     @PostMapping("/sessions/{id}/participants")
-    public VirtualSession addParticipant(@PathVariable Long id, @Valid @RequestBody AddParticipantRequest req) {
-        return service.addParticipant(id, req);
+    public VirtualSession addParticipant(@AuthenticationPrincipal Jwt jwt,
+                                         @PathVariable Long id,
+                                         @Valid @RequestBody AddParticipantRequest req) {
+        String userId = jwt.getSubject();
+        return service.addParticipant(id, req, userId);
     }
 
-    @PatchMapping("/sessions/{id}/participants/{userId}")
-    public VirtualSession updateParticipantStatus(
+    @PatchMapping("/sessions/{id}/participants/me")
+    public VirtualSession updateMyParticipantStatus(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id,
-            @PathVariable String userId,
             @Valid @RequestBody UpdateParticipantStatusRequest req
     ) {
+        String userId = jwt.getSubject();
         return service.updateParticipantStatus(id, userId, req);
     }
 
-    @PatchMapping("/sessions/{id}/participants/{userId}/prefs")
-    public VirtualSession updateParticipantPrefs(
+    @PatchMapping("/sessions/{id}/participants/me/prefs")
+    public VirtualSession updateMyParticipantPrefs(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id,
-            @PathVariable String userId,
             @Valid @RequestBody UpdateParticipantPrefsRequest req
     ) {
+        String userId = jwt.getSubject();
         return service.updateParticipantPrefs(id, userId, req);
     }
 
@@ -89,17 +98,19 @@ public class VirtualSessionController {
 
     // ---- Views ----
 
-    @GetMapping("/users/{userId}/favorites")
-    public List<VirtualSession> favorites(@PathVariable String userId) {
+    @GetMapping("/me/favorites")
+    public List<VirtualSession> favorites(@AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
         return service.listUserFavorites(userId);
     }
 
-    @GetMapping("/users/{userId}/reminders")
+    @GetMapping("/me/reminders")
     public List<VirtualSession> reminders(
-            @PathVariable String userId,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to
     ) {
+        String userId = jwt.getSubject();
         return service.listUserReminders(userId, from, to);
     }
 }

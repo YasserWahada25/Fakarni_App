@@ -4,6 +4,7 @@
         <mat-form-field appearance="outline" class="full-width">
             <mat-label>Titre de la session</mat-label>
             <input matInput formControlName="title" placeholder="Ex. Atelier Mémoire">
+            <mat-icon matPrefix>event</mat-icon>
             <mat-error *ngIf="sessionForm.get('title')?.hasError('required')">Le titre est requis</mat-error>
         </mat-form-field>
 
@@ -18,10 +19,7 @@
         <mat-form-field appearance="outline">
             <mat-label>Statut</mat-label>
             <mat-select formControlName="status">
-                <mat-option value="scheduled">Prévu</mat-option>
-                <mat-option value="in-progress">En cours</mat-option>
-                <mat-option value="completed">Terminé</mat-option>
-                <mat-option value="cancelled">Annulé</mat-option>
+                <mat-option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</mat-option>
             </mat-select>
         </mat-form-field>
 
@@ -38,19 +36,35 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline">
+            <mat-label>Visibilité</mat-label>
+            <mat-select formControlName="visibility">
+                <mat-option *ngFor="let opt of visibilityOptions" [value]="opt.value">{{ opt.label }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
             <mat-label>Nombre de participants</mat-label>
             <input matInput type="number" formControlName="participantsCount">
+            <mat-icon matPrefix>group</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>URL de la réunion</mat-label>
+            <input matInput formControlName="meetingUrl" placeholder="https://meet.example.com/...">
+            <mat-icon matPrefix>videocam</mat-icon>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
             <mat-label>Description</mat-label>
-            <textarea matInput formControlName="description" rows="3"></textarea>
+            <textarea matInput formControlName="description" rows="3"
+                placeholder="Description de la session..."></textarea>
         </mat-form-field>
     </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-    <button mat-button (click)="onCancel()">Annuler</button>
-    <button mat-raised-button color="primary" [disabled]="sessionForm.invalid" (click)="onSubmit()">
-        {{ isEditMode ? 'Enregistrer' : 'Créer' }}
+    <button mat-button (click)="onCancel()" class="cancel-btn">Annuler</button>
+    <button mat-raised-button color="primary" [disabled]="sessionForm.invalid" (click)="onSubmit()" class="submit-btn">
+        <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+        {{ isEditMode ? 'Enregistrer' : 'Créer la session' }}
     </button>
 </mat-dialog-actions>
