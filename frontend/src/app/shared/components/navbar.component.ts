@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
     selector: 'app-navbar',
@@ -13,18 +14,28 @@ export class NavbarComponent {
     isMobileMenuOpen = false;
     activeDropdown: string | null = null;
 
-    toggleMobileMenu() {
+    constructor(
+        private authService: AuthService,
+        private router: Router
+    ) {}
+
+    get isLoggedIn(): boolean {
+        return this.authService.isLoggedIn();
+    }
+
+    toggleMobileMenu(): void {
         this.isMobileMenuOpen = !this.isMobileMenuOpen;
     }
 
-    toggleDropdown(menuName: string) {
-        // Only for mobile click toggle
+    toggleDropdown(menuName: string): void {
         if (window.innerWidth <= 992) {
-            if (this.activeDropdown === menuName) {
-                this.activeDropdown = null;
-            } else {
-                this.activeDropdown = menuName;
-            }
+            this.activeDropdown = this.activeDropdown === menuName ? null : menuName;
         }
+    }
+
+    onLogout(): void {
+        this.authService.logout();
+        this.isMobileMenuOpen = false;
+        this.router.navigate(['/auth/signin']);
     }
 }

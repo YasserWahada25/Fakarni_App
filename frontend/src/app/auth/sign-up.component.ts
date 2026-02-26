@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ROLE_OPTIONS, Role, SignUpRequest } from './models/sign-up.model';
+import { AuthService } from './services/auth.service';
 
 @Component({
     selector: 'app-sign-up',
@@ -12,12 +13,14 @@ import { ROLE_OPTIONS, Role, SignUpRequest } from './models/sign-up.model';
 })
 export class SignUpComponent {
     signUpForm: FormGroup;
-    /** Liste déroulante des rôles (enum backend). */
     roleOptions = ROLE_OPTIONS;
+    errorMessage: string | null = null;
+    loading = false;
 
     constructor(
         private fb: FormBuilder,
-        private router: Router
+        private router: Router,
+        private authService: AuthService
     ) {
         this.signUpForm = this.fb.group({
             nom: ['', Validators.required],
@@ -31,12 +34,16 @@ export class SignUpComponent {
     }
 
     onSubmit(): void {
-        if (this.signUpForm.invalid) {
-            return;
-        }
+        if (this.signUpForm.invalid || this.loading) return;
+        this.errorMessage = null;
+        this.loading = true;
         const value = this.signUpForm.value as SignUpRequest;
-        // Étape 0 : affichage en console. Plus tard : appel API (authService.register(value)).
-        console.log('SignUp payload:', value);
-        this.router.navigate(['/auth/signin']);
+        this.authService.register(value).subscribe({
+            next: () => this.router.navigate(['/auth/signin']),
+            error: (err) => {
+                this.loading = false;
+                this.errorMessage = err?.error?.message || 'Registration failed. Please try again.';
+            }
+        });
     }
 }

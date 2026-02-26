@@ -4,6 +4,9 @@
             <h2>Create Account</h2>
             <p>Fill in the details below to create an account.</p>
 
+            @if (errorMessage) {
+                <p class="auth-error">{{ errorMessage }}</p>
+            }
             <form class="auth-form" [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
                 <div class="form-group">
                     <label for="nom">Name</label>
@@ -38,8 +41,8 @@
                     <input id="adresse" type="text" formControlName="adresse" placeholder="Your address">
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block" [disabled]="signUpForm.invalid">
-                    SIGN UP
+                <button type="submit" class="btn btn-primary btn-block" [disabled]="signUpForm.invalid || loading">
+                    {{ loading ? 'Please wait...' : 'SIGN UP' }}
                 </button>
             </form>
 

@@ -6,11 +6,14 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-
 public class GatewayServiceApplication {
 
 	public static void main(String[] args) {
@@ -21,20 +24,36 @@ public class GatewayServiceApplication {
 	public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
 		return builder.routes()
 
-				.route("session_service", r -> r.path("/session/**")
+				// SESSION-SERVICE
+				.route("session_service", r -> r
+						.path("/session/**")
 						.uri("lb://SESSION-SERVICE"))
-				.route("Event-Service", r -> r.path("/api/events/**")
+
+				// EVENT-SERVICE
+				.route("event_service", r -> r
+						.path("/api/events/**")
 						.uri("lb://EVENT-SERVICE"))
-				.route("User-Service", r -> r.path("/api/users/**")
+
+				// USER-SERVICE
+				.route("User-Service", r -> r
+						.path("/api/users/**", "/auth/**", "/internal/users/**")
 						.uri("lb://USER-SERVICE"))
+
 				.build();
-
-
-
-
-
-
-
 	}
 
+	@Bean
+	public CorsWebFilter corsWebFilter() {
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowedOrigins(List.of("http://localhost:4200"));
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+		config.setAllowedHeaders(List.of("*"));
+		config.setAllowCredentials(true);
+		config.setExposedHeaders(List.of("Authorization"));
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config);
+
+		return new CorsWebFilter(source);
+	}
 }

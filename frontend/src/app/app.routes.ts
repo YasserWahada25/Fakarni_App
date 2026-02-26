@@ -3,6 +3,7 @@ import { MainLayoutComponent } from './shared/components/main-layout.component';
 import { HomeComponent } from './home/home.component';
 import { SignInComponent } from './auth/sign-in.component';
 import { SignUpComponent } from './auth/sign-up.component';
+import { ProfileEditComponent } from './profile/profile-edit.component';
 
 export const routes: Routes = [
     // Default redirect to Login
@@ -18,6 +19,7 @@ export const routes: Routes = [
         component: MainLayoutComponent,
         children: [
             { path: 'home', component: HomeComponent },
+            { path: 'profile/edit', component: ProfileEditComponent },
             {
                 path: 'alzheimer_meeting',
                 loadChildren: () => import('./alzheimer_meeting/alzheimer-meeting.routes').then(m => m.ALZHEIMER_ROUTES)
