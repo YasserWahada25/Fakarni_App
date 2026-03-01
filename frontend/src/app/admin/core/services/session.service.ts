@@ -15,6 +15,8 @@ interface VirtualSessionResponse {
     createdBy: string;
     status: string;
     visibility: string;
+    sessionType: string;
+    meetingMode: string;
     createdAt: string;
     updatedAt: string;
     participants: any[];
@@ -29,6 +31,18 @@ interface CreateSessionRequest {
     createdBy: string;
     status: string;
     visibility: string;
+    sessionType: string;
+    meetingMode: string;
+}
+
+interface UpdateSessionRequest {
+    title: string;
+    description?: string;
+    startTime: string;
+    endTime: string;
+    meetingUrl?: string;
+    status: string;
+    visibility: string;
 }
 
 @Injectable({
@@ -41,7 +55,10 @@ export class SessionService {
 
     getSessions(): Observable<Session[]> {
         return this.http.get<VirtualSessionResponse[]>(`${this.apiUrl}/sessions`).pipe(
-            map(data => data.map(s => this.mapToSession(s)))
+            map(data => data
+                .slice()
+                .sort((a, b) => (b.id ?? 0) - (a.id ?? 0))
+                .map(s => this.mapToSession(s)))
         );
     }
 
@@ -71,7 +88,10 @@ export class SessionService {
             .set('to', to.toISOString());
 
         return this.http.get<VirtualSessionResponse[]>(`${this.apiUrl}/sessions`, { params }).pipe(
-            map(data => data.map(s => this.mapToSession(s)))
+            map(data => data
+                .slice()
+                .sort((a, b) => (b.id ?? 0) - (a.id ?? 0))
+                .map(s => this.mapToSession(s)))
         );
     }
 
@@ -90,7 +110,7 @@ export class SessionService {
     }
 
     updateSession(session: Session): Observable<Session> {
-        const request = this.mapToCreateRequest(session);
+        const request = this.mapToUpdateRequest(session);
         return this.http.put<VirtualSessionResponse>(`${this.apiUrl}/sessions/${session.id}`, request).pipe(
             map(s => this.mapToSession(s))
         );
@@ -125,6 +145,8 @@ export class SessionService {
             participantsCount: s.participants?.length || 0,
             description: s.description,
             visibility: s.visibility as Session['visibility'],
+            sessionType: s.sessionType as Session['sessionType'],
+            meetingMode: s.meetingMode as Session['meetingMode'],
             meetingUrl: s.meetingUrl,
             createdBy: s.createdBy,
             createdAt: s.createdAt
@@ -143,6 +165,24 @@ export class SessionService {
             endTime: endTime.toISOString(),
             meetingUrl: session.meetingUrl || '',
             createdBy: session.createdBy || 'admin',
+            status: session.status || 'SCHEDULED',
+            visibility: session.visibility || 'PUBLIC',
+            sessionType: session.sessionType || 'GROUP',
+            meetingMode: session.meetingMode || 'ONLINE'
+        };
+    }
+
+    private mapToUpdateRequest(session: Session): UpdateSessionRequest {
+        const sessionDate = this.normalizeDate(session.date);
+        const startTime = this.buildDateTime(sessionDate, session.startTime);
+        const endTime = this.buildDateTime(sessionDate, session.endTime);
+
+        return {
+            title: session.title,
+            description: session.description,
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
+            meetingUrl: session.meetingUrl || '',
             status: session.status || 'SCHEDULED',
             visibility: session.visibility || 'PUBLIC'
         };

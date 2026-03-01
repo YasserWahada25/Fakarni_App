@@ -1,0 +1,328 @@
+:host {
+    display: block;
+}
+
+.page-container {
+    padding: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+    font-family: 'Poppins', sans-serif;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #6a1b9a, #ce93d8);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+}
+
+.header-icon mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.page-header p {
+    margin: 4px 0 0;
+    color: #78909c;
+    font-size: 0.9rem;
+}
+
+.loading-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 60px 0;
+    color: #90a4ae;
+}
+
+.reservations-tabs {
+    margin-top: 8px;
+}
+
+.tab-content {
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.badge-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    background: #f44336;
+    color: #ffffff;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0 5px;
+    margin-left: 8px;
+}
+
+mat-tab-group ::ng-deep .mat-mdc-tab .mat-icon {
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.res-card {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+    overflow: hidden;
+    display: flex;
+    padding: 0 !important;
+}
+
+.card-accent {
+    width: 5px;
+    flex-shrink: 0;
+}
+
+.card-accent.online {
+    background: linear-gradient(to bottom, #42a5f5, #1976d2);
+}
+
+.card-accent.presential {
+    background: linear-gradient(to bottom, #ab47bc, #6a1b9a);
+}
+
+.card-body {
+    flex: 1;
+    padding: 20px;
+}
+
+.card-header-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.session-icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+    background: #f3e5f5;
+    color: #ab47bc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.session-icon.online {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.card-title-area {
+    flex: 1;
+}
+
+.card-title-area h3 {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.patient-id {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.82rem;
+    color: #90a4ae;
+    margin: 0;
+}
+
+.patient-id mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.status-draft {
+    background: #fff8e1;
+    color: #f57f17;
+}
+
+.status-scheduled {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-cancelled {
+    background: #fce4ec;
+    color: #c62828;
+}
+
+.status-done {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-item mat-icon {
+    color: #ab47bc;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.info-item div {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 0.72rem;
+    color: #90a4ae;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.info-value {
+    font-size: 0.9rem;
+    color: #333333;
+    font-weight: 500;
+}
+
+.session-description {
+    font-size: 0.9rem;
+    color: #546e7a;
+    line-height: 1.5;
+    margin: 8px 0 12px;
+}
+
+.meeting-url-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #1976d2;
+    font-weight: 500;
+    font-size: 0.88rem;
+    text-decoration: none;
+    margin-bottom: 12px;
+}
+
+.meeting-url-link:hover {
+    text-decoration: underline;
+}
+
+.card-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.card-actions button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card-actions mat-spinner {
+    display: inline-block;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: #b0bec5;
+}
+
+.empty-state mat-icon {
+    font-size: 56px;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+    color: #78909c;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+    .page-container {
+        padding: 16px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-actions {
+        flex-direction: column;
+    }
+}

@@ -1,101 +1,138 @@
+:host {
+    display: block;
+}
+
 .meeting-container {
+    --controls-height: 84px;
     display: flex;
-    height: 100vh;
     width: 100vw;
-    background-color: #202124;
-    /* Dark theme for meetings */
-    color: white;
+    height: 100dvh;
+    background: #202124;
+    color: #ffffff;
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     z-index: 2000;
-    /* Above everything */
+    overflow: hidden;
 }
 
 .main-content {
     flex: 1;
+    min-width: 0;
+    height: 100%;
     display: flex;
     flex-direction: column;
     position: relative;
-    transition: all 0.3s ease;
-    height: 100%;
 }
 
 .meeting-header {
-    padding: 16px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent); */
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 10;
+    z-index: 20;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    pointer-events: none;
 }
 
 .meeting-header h2 {
-    font-size: 1.2rem;
-    font-weight: 500;
     margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.2;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .recording-indicator {
-    color: #e74c3c;
-    font-weight: 600;
-    font-size: 0.9rem;
-    display: flex;
+    color: #ff4d4f;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 4px 12px;
-    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.45);
+    padding: 4px 10px;
+    border-radius: 8px;
 }
 
 .recording-indicator i {
-    font-size: 0.6rem;
-    animation: blink 2s infinite;
+    font-size: 0.58rem;
+    animation: blink 1.7s infinite;
+}
+
+app-video-grid {
+    display: block;
+    flex: 1;
+    min-height: 0;
+}
+
+app-meeting-controls {
+    display: block;
+    position: sticky;
+    bottom: 0;
+    z-index: 70;
+}
+
+.meeting-sidebar {
+    width: clamp(300px, 28vw, 380px);
+    max-width: 100%;
+    background: #ffffff;
+    color: #202124;
+    border-left: 1px solid #d8dce8;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.25);
+    z-index: 60;
+    height: 100%;
 }
 
 @keyframes blink {
     0% {
         opacity: 1;
     }
-
     50% {
-        opacity: 0.5;
+        opacity: 0.45;
     }
-
     100% {
         opacity: 1;
     }
 }
 
-.meeting-sidebar {
-    width: 360px;
-    background: white;
-    /* Light theme sidebar for readability */
-    color: #333;
-    border-left: 1px solid #333;
-    display: flex;
-    flex-direction: column;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
-}
-
-@media (max-width: 768px) {
+@media (max-width: 1100px) {
     .meeting-sidebar {
         position: absolute;
         right: 0;
         top: 0;
-        bottom: 0;
-        width: 100%;
-        /* Full width on mobile */
-        z-index: 20;
+        bottom: var(--controls-height);
+        width: min(92vw, 380px);
+        height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .meeting-container {
+        --controls-height: 74px;
     }
 
-    .main-content.sidebar-open {
-        display: none;
-        /* Hide video when chat is open on mobile? or just overlay */
+    .meeting-header {
+        padding: 10px 12px;
+    }
+
+    .meeting-header h2 {
+        font-size: 1rem;
+        max-width: 62vw;
+    }
+
+    .recording-indicator {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+    }
+
+    .meeting-sidebar {
+        width: 100vw;
     }
 }

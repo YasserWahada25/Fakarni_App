@@ -9,7 +9,6 @@ import lombok.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -54,13 +53,21 @@ public class VirtualSession {
     @Column(nullable = false)
     private SessionVisibility visibility;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private SessionType sessionType; // Ajout pour session type
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private MeetingMode meetingMode; // Ajout pour meeting mode
+
     @Column(updatable = false)
     private Instant createdAt;
     private Instant updatedAt;
 
     @Valid
     @Builder.Default
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "virtual_session_id")
     private List<SessionParticipant> participants = new ArrayList<>();
 

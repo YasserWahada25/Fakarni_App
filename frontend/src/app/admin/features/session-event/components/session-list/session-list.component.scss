@@ -145,6 +145,40 @@ table {
     }
 }
 
+.meta-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.type-badge {
+    &.GROUP {
+        background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+        color: #2e7d32;
+    }
+
+    &.PRIVATE {
+        background: linear-gradient(135deg, #ede7f6, #f3e5f5);
+        color: #6a1b9a;
+    }
+}
+
+.mode-badge {
+    &.ONLINE {
+        background: linear-gradient(135deg, #e3f2fd, #e1f5fe);
+        color: #1565c0;
+    }
+
+    &.IN_PERSON {
+        background: linear-gradient(135deg, #fff3e0, #fbe9e7);
+        color: #ef6c00;
+    }
+}
+
 .bold-text {
     font-weight: 600;
     color: #2c2c54;

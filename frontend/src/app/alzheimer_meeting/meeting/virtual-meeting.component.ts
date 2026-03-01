@@ -1,10 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { VideoGridComponent } from './video-grid.component';
 import { MeetingControlsComponent } from './meeting-controls.component';
 import { MeetingSidebarComponent } from './meeting-sidebar.component';
 import { AlzheimerService } from '../shared/alzheimer.service';
+import { VideoSessionService } from './video-session.service';
+import { WebrtcPeerService } from './webrtc-peer.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-virtual-meeting',
@@ -19,16 +22,43 @@ export class VirtualMeetingComponent implements OnInit, OnDestroy {
     isSidebarOpen: boolean = true;
     activeSidebarTab: string = 'chat'; // chat, participants, agenda, docs
 
+    // Variables WebRTC
+    roomId: string = '';
+    currentUser: string = this.resolveCurrentUserId();
+    isMuted = false;
+    isVideoOff = false;
+    participantCount = 0;
+
+    private subscriptions: Subscription[] = [];
+
     constructor(
         private route: ActivatedRoute,
-        private alzheimerService: AlzheimerService
+        private router: Router,
+        private alzheimerService: AlzheimerService,
+        private videoSessionService: VideoSessionService,
+        private webrtcService: WebrtcPeerService
     ) { }
 
     ngOnInit(): void {
-        this.route.params.subscribe(params => {
+        this.subscriptions.push(this.route.params.subscribe(params => {
             this.sessionId = +params['id'];
             this.loadSessionDetails();
-        });
+        }));
+
+        this.subscriptions.push(this.route.queryParams.subscribe(params => {
+            this.roomId = params['roomId'];
+            if (this.roomId) {
+                // Se connecter au broker STOMP pour la signalisation
+                this.videoSessionService.connectAndSubscribe(this.roomId, this.currentUser);
+            } else {
+                console.error('Aucun roomId fourni ! URL doit contenir ?roomId=UUID');
+                this.router.navigate(['/alzheimer_meeting/consultation']);
+            }
+        }));
+
+        this.subscriptions.push(this.videoSessionService.participants$.subscribe(ids => {
+            this.participantCount = ids.length;
+        }));
     }
 
     loadSessionDetails(): void {
@@ -43,7 +73,21 @@ export class VirtualMeetingComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        // Cleanup logic
+        this.subscriptions.forEach(sub => sub.unsubscribe());
+        this.subscriptions = [];
+        if (this.roomId) {
+            this.videoSessionService.disconnect(this.roomId, this.currentUser);
+        }
+    }
+
+    private resolveCurrentUserId(): string {
+        if (typeof window === 'undefined') return 'patient';
+        const storage = window.localStorage;
+        return storage.getItem('userId')
+            || storage.getItem('user_id')
+            || storage.getItem('uid')
+            || storage.getItem('username')
+            || 'patient';
     }
 
     toggleSidebar(tab?: string): void {
@@ -60,7 +104,26 @@ export class VirtualMeetingComponent implements OnInit, OnDestroy {
     }
 
     onLeaveMeeting(): void {
-        // Handle leave logic (navigation handled by routerLink in template usually, or here)
+        if (this.roomId) {
+            this.videoSessionService.disconnect(this.roomId, this.currentUser);
+        }
         console.log('Leaving meeting...');
+        this.router.navigate(['/alzheimer_meeting/consultation']);
+    }
+
+    onToggleMute(): void {
+        this.isMuted = this.webrtcService.toggleLocalAudio();
+    }
+
+    onToggleVideo(): void {
+        this.isVideoOff = this.webrtcService.toggleLocalVideo();
+    }
+
+    async onShareScreen(): Promise<void> {
+        try {
+            await this.webrtcService.startScreenShare();
+        } catch (err) {
+            console.error('Partage d\'écran impossible', err);
+        }
     }
 }

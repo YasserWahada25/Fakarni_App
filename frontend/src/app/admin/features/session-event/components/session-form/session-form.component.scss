@@ -35,6 +35,18 @@
     gap: 6px !important;
 }
 
+.form-alert {
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 0.86rem;
+}
+
+.form-alert.error {
+    background: #ffefee;
+    border: 1px solid #ffd4d1;
+    color: #b42318;
+}
+
 ::ng-deep .mat-mdc-form-field-icon-prefix {
     color: #5c6bc0;
     margin-right: 8px;

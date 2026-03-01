@@ -1,15 +1,23 @@
 package com.alzheimer.session_service.dto;
 
+import com.alzheimer.session_service.entities.MeetingMode;
 import com.alzheimer.session_service.entities.SessionStatus;
+import com.alzheimer.session_service.entities.SessionType;
 import com.alzheimer.session_service.entities.SessionVisibility;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class CreateSessionRequest {
     @NotBlank
@@ -25,76 +33,13 @@ public class CreateSessionRequest {
 
     private String meetingUrl;
 
-    @NotBlank
     private String createdBy;
 
-    @NotNull
     private SessionStatus status;
 
-    @NotNull
     private SessionVisibility visibility;
 
-    public @NotBlank String getTitle() {
-        return title;
-    }
+    private SessionType sessionType;
 
-    public void setTitle(@NotBlank String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public @NotNull Instant getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(@NotNull Instant startTime) {
-        this.startTime = startTime;
-    }
-
-    public @NotNull Instant getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(@NotNull Instant endTime) {
-        this.endTime = endTime;
-    }
-
-    public String getMeetingUrl() {
-        return meetingUrl;
-    }
-
-    public void setMeetingUrl(String meetingUrl) {
-        this.meetingUrl = meetingUrl;
-    }
-
-    public @NotNull SessionVisibility getVisibility() {
-        return visibility;
-    }
-
-    public void setVisibility(@NotNull SessionVisibility visibility) {
-        this.visibility = visibility;
-    }
-
-    public @NotBlank String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(@NotBlank String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public @NotNull SessionStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(@NotNull SessionStatus status) {
-        this.status = status;
-    }
+    private MeetingMode meetingMode;
 }

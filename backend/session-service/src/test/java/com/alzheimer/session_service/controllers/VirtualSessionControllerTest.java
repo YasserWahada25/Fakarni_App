@@ -10,7 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.Instant;
 import java.util.List;
@@ -30,45 +29,31 @@ class VirtualSessionControllerTest {
     private VirtualSessionController controller;
 
     @Test
-    void updateMyParticipantPrefs_delegatesToService_withUserFromJwt() {
-        Jwt jwt = buildJwt("user-3");
-
+    void updateMyParticipantPrefs_delegatesToService_withoutJwt() {
         UpdateParticipantPrefsRequest request = UpdateParticipantPrefsRequest.builder()
                 .isFavorite(true)
                 .build();
 
         VirtualSession session = buildSession(3L);
 
-        when(service.updateParticipantPrefs(3L, "user-3", request)).thenReturn(session);
+        when(service.updateParticipantPrefs(3L, request)).thenReturn(session);
 
-        VirtualSession result = controller.updateMyParticipantPrefs(jwt, 3L, request);
+        VirtualSession result = controller.updateMyParticipantPrefs(3L, request);
 
         assertSame(session, result);
-        verify(service).updateParticipantPrefs(3L, "user-3", request);
+        verify(service).updateParticipantPrefs(3L, request);
     }
 
     @Test
-    void favorites_delegatesToService_withUserFromJwt() {
-        Jwt jwt = buildJwt("user-4");
-
+    void favorites_delegatesToService_withoutJwt() {
         VirtualSession session = buildSession(4L);
-        when(service.listUserFavorites("user-4")).thenReturn(List.of(session));
+        when(service.listUserFavorites()).thenReturn(List.of(session));
 
-        List<VirtualSession> result = controller.favorites(jwt);
+        List<VirtualSession> result = controller.favorites();
 
         assertEquals(1, result.size());
         assertEquals(4L, result.get(0).getId());
-        verify(service).listUserFavorites("user-4");
-    }
-
-    // -------- Helpers --------
-
-    private Jwt buildJwt(String userId) {
-        return Jwt.withTokenValue("dummy-token")
-                .header("alg", "HS256")
-                .subject(userId)                 // ✅ jwt.getSubject() == userId
-                .claim("role", "PATIENT_PROFILE")
-                .build();
+        verify(service).listUserFavorites();
     }
 
     private VirtualSession buildSession(Long id) {

@@ -1,12 +1,51 @@
 <div class="calendar-container">
     <div class="calendar-header">
-        <button (click)="previousMonth()" class="nav-btn">
+        <button (click)="previousMonth()" class="nav-btn" aria-label="Mois precedent">
             <i class="fa-solid fa-chevron-left"></i>
         </button>
         <h2>{{ currentMonth | date:'MMMM yyyy' }}</h2>
-        <button (click)="nextMonth()" class="nav-btn">
+        <button (click)="nextMonth()" class="nav-btn" aria-label="Mois suivant">
             <i class="fa-solid fa-chevron-right"></i>
         </button>
+    </div>
+
+    <div class="top-widgets">
+        <div class="stats-grid">
+            <div class="stat-card stat-total">
+                <span class="stat-label">Sessions planifiees</span>
+                <span class="stat-value">{{ totalPlannedCount }}</span>
+            </div>
+            <div class="stat-card stat-online">
+                <span class="stat-label">En ligne</span>
+                <span class="stat-value">{{ onlinePlannedCount }}</span>
+            </div>
+            <div class="stat-card stat-presential">
+                <span class="stat-label">Presentielle</span>
+                <span class="stat-value">{{ inPersonPlannedCount }}</span>
+            </div>
+            <div class="stat-card stat-month">
+                <span class="stat-label">Ce mois</span>
+                <span class="stat-value">{{ currentMonthPlannedCount }}</span>
+            </div>
+        </div>
+
+        <div class="filter-card">
+            <div class="filter-header">
+                <h3>Filtrer le calendrier</h3>
+                <span class="active-filter">{{ modeFilterLabel }}</span>
+            </div>
+            <div class="filter-actions">
+                <button type="button" class="filter-btn" [class.active]="isModeFilterActive('ALL')" (click)="setModeFilter('ALL')">
+                    Les deux
+                </button>
+                <button type="button" class="filter-btn" [class.active]="isModeFilterActive('ONLINE')" (click)="setModeFilter('ONLINE')">
+                    En ligne
+                </button>
+                <button type="button" class="filter-btn" [class.active]="isModeFilterActive('IN_PERSON')" (click)="setModeFilter('IN_PERSON')">
+                    Presentielle
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="weekdays">
@@ -14,17 +53,14 @@
     </div>
 
     <div class="days-grid">
-        <div *ngFor="let day of calendarDays" class="day-cell"
-            [class.not-current-month]="day.getMonth() !== currentMonth.getMonth()"
-            [class.today]="isToday(day)"
-            [class.has-sessions]="getSessionsForDay(day).length > 0">
+        <div *ngFor="let day of calendarDays" class="day-cell" [class.not-current-month]="day.getMonth() !== currentMonth.getMonth()"
+            [class.today]="isToday(day)" [class.has-sessions]="getSessionsForDay(day).length > 0" (click)="openDaySessionsPopup(day)">
 
             <span class="day-number" [class.today-number]="isToday(day)">{{ day | date:'d' }}</span>
 
             <div class="events-list">
-                <div *ngFor="let session of getSessionsForDay(day)" class="event-pill"
-                    [ngClass]="getSessionTypeClass(session)"
-                    [class.favorite]="session.isFavorite"
+                <div *ngFor="let session of getPreviewSessionsForDay(day); trackBy: trackBySessionId" class="event-pill"
+                    [ngClass]="getSessionTypeClass(session)" [class.favorite]="session.isFavorite"
                     (click)="selectSession(session); $event.stopPropagation()">
                     <span class="event-title">{{ session.title }}</span>
                     <button class="fav-btn" (click)="toggleFavorite(session); $event.stopPropagation()"
@@ -33,13 +69,56 @@
                         {{ session.isFavorite ? '★' : '☆' }}
                     </button>
                 </div>
+
+                <button *ngIf="getHiddenSessionsCount(day) > 0" class="more-events-btn"
+                    (click)="openDaySessionsPopup(day); $event.stopPropagation()">
+                    +{{ getHiddenSessionsCount(day) }} autres
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="detail-panel" *ngIf="selectedSession" @slideIn>
+    <div class="detail-panel" *ngIf="selectedSession">
         <app-session-detail [session]="selectedSession" (close)="closeDetail()"
             (toggleFavorite)="toggleFavorite(selectedSession!)">
         </app-session-detail>
+    </div>
+
+    <div class="day-popup-overlay" *ngIf="isDayPopupOpen" (click)="closeDaySessionsPopup()">
+        <div class="day-popup" (click)="$event.stopPropagation()">
+            <div class="day-popup-header">
+                <div>
+                    <h3>Sessions planifiees</h3>
+                    <p>{{ selectedDay | date:'fullDate' }}</p>
+                </div>
+                <button class="popup-close-btn" (click)="closeDaySessionsPopup()" aria-label="Fermer">✕</button>
+            </div>
+
+            <div class="day-popup-body" *ngIf="dayPopupSessions.length > 0; else noDaySessions">
+                <button type="button" class="day-session-card" *ngFor="let session of dayPopupSessions; trackBy: trackBySessionId"
+                    (click)="openSessionFromDayPopup(session)">
+                    <div class="card-top">
+                        <span class="session-type-chip" [ngClass]="getSessionTypeClass(session)">{{ session.type || 'General' }}</span>
+                        <span class="status-chip" [ngClass]="getStatusClass(session)">{{ getStatusLabel(session) }}</span>
+                    </div>
+
+                    <h4>{{ session.title }}</h4>
+                    <p>{{ session.description || 'Aucune description disponible.' }}</p>
+
+                    <div class="card-meta">
+                        <span>{{ session.time || (session.startTime | date:'HH:mm') }}</span>
+                        <span>{{ session.participants || '0' }} participants</span>
+                        <span>{{ session.visibility === 'PUBLIC' ? 'Publique' : 'Privee' }}</span>
+                    </div>
+                </button>
+            </div>
+
+            <ng-template #noDaySessions>
+                <div class="empty-day-state">
+                    <h4>Aucune session planifiee</h4>
+                    <p>Il n'y a pas de session acceptee ou planifiee pour ce jour.</p>
+                </div>
+            </ng-template>
+        </div>
     </div>
 </div>

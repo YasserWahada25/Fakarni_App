@@ -1,7 +1,14 @@
 {
     "/session": {
-        "target": "http://localhost:8090",
+        "target": "http://localhost:8085",
         "secure": false,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+    "/ws": {
+        "target": "http://localhost:8085",
+        "secure": false,
+        "ws": true,
         "changeOrigin": true,
         "logLevel": "debug"
     }

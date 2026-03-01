@@ -1,15 +1,28 @@
 package com.alzheimer.session_service.controllers;
 
-import com.alzheimer.session_service.dto.*;
+import com.alzheimer.session_service.dto.AddParticipantRequest;
+import com.alzheimer.session_service.dto.CreateSessionRequest;
+import com.alzheimer.session_service.dto.UpdateParticipantPrefsRequest;
+import com.alzheimer.session_service.dto.UpdateParticipantStatusRequest;
+import com.alzheimer.session_service.dto.UpdateSessionRequest;
 import com.alzheimer.session_service.entities.SessionParticipant;
 import com.alzheimer.session_service.entities.SessionStatus;
 import com.alzheimer.session_service.entities.VirtualSession;
 import com.alzheimer.session_service.services.VirtualSessionService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,27 +37,19 @@ public class VirtualSessionController {
         this.service = service;
     }
 
-    // ---- Sessions CRUD ----
-
     @PostMapping("/sessions")
-    public VirtualSession create(@AuthenticationPrincipal Jwt jwt,
-                                 @Valid @RequestBody CreateSessionRequest req) {
-        String userId = jwt.getSubject();
-        return service.create(req, userId);
+    public VirtualSession createSession(@Valid @RequestBody CreateSessionRequest req) {
+        return service.createReservation(req);
     }
 
     @PutMapping("/sessions/{id}")
-    public VirtualSession update(@AuthenticationPrincipal Jwt jwt,
-                                 @PathVariable Long id,
-                                 @Valid @RequestBody UpdateSessionRequest req) {
-        String userId = jwt.getSubject();
-        return service.update(id, req, userId);
+    public VirtualSession update(@PathVariable Long id, @Valid @RequestBody UpdateSessionRequest req) {
+        return service.update(id, req);
     }
 
     @DeleteMapping("/sessions/{id}")
-    public void delete(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
-        String userId = jwt.getSubject();
-        service.delete(id, userId);
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 
     @GetMapping("/sessions/{id}")
@@ -61,34 +66,25 @@ public class VirtualSessionController {
         return service.list(from, to, status);
     }
 
-    // ---- Participants ----
-
     @PostMapping("/sessions/{id}/participants")
-    public VirtualSession addParticipant(@AuthenticationPrincipal Jwt jwt,
-                                         @PathVariable Long id,
-                                         @Valid @RequestBody AddParticipantRequest req) {
-        String userId = jwt.getSubject();
-        return service.addParticipant(id, req, userId);
+    public VirtualSession addParticipant(@PathVariable Long id, @Valid @RequestBody AddParticipantRequest req) {
+        return service.addParticipant(id, req);
     }
 
     @PatchMapping("/sessions/{id}/participants/me")
     public VirtualSession updateMyParticipantStatus(
-            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id,
             @Valid @RequestBody UpdateParticipantStatusRequest req
     ) {
-        String userId = jwt.getSubject();
-        return service.updateParticipantStatus(id, userId, req);
+        return service.updateParticipantStatus(id, req);
     }
 
     @PatchMapping("/sessions/{id}/participants/me/prefs")
     public VirtualSession updateMyParticipantPrefs(
-            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id,
             @Valid @RequestBody UpdateParticipantPrefsRequest req
     ) {
-        String userId = jwt.getSubject();
-        return service.updateParticipantPrefs(id, userId, req);
+        return service.updateParticipantPrefs(id, req);
     }
 
     @GetMapping("/sessions/{id}/participants")
@@ -96,21 +92,27 @@ public class VirtualSessionController {
         return service.listParticipants(id);
     }
 
-    // ---- Views ----
-
     @GetMapping("/me/favorites")
-    public List<VirtualSession> favorites(@AuthenticationPrincipal Jwt jwt) {
-        String userId = jwt.getSubject();
-        return service.listUserFavorites(userId);
+    public List<VirtualSession> favorites() {
+        return service.listUserFavorites();
     }
 
     @GetMapping("/me/reminders")
     public List<VirtualSession> reminders(
-            @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to
     ) {
-        String userId = jwt.getSubject();
-        return service.listUserReminders(userId, from, to);
+        return service.listUserReminders(from, to);
+    }
+
+    @PatchMapping("/sessions/{id}/response")
+    public VirtualSession respondToSession(@PathVariable Long id, @RequestParam boolean accept) {
+        try {
+            return service.respondToReservation(id, accept);
+        } catch (VirtualSessionService.BadRequestException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur interne", e);
+        }
     }
 }

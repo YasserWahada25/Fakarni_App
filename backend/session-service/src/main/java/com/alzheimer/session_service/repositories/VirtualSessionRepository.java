@@ -10,7 +10,13 @@ import java.util.List;
 
 public interface VirtualSessionRepository extends JpaRepository<VirtualSession, Long> {
 
+    List<VirtualSession> findByStatus(com.alzheimer.session_service.entities.SessionStatus status);
+
     List<VirtualSession> findByStartTimeBetween(Instant from, Instant to);
+
+    List<VirtualSession> findByStartTimeGreaterThanEqual(Instant from);
+
+    List<VirtualSession> findByStartTimeLessThanEqual(Instant to);
 
     List<VirtualSession> findByStatusAndStartTimeBetween(
             com.alzheimer.session_service.entities.SessionStatus status,

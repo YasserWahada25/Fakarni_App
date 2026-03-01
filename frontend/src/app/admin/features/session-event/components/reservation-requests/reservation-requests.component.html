@@ -1,0 +1,160 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <mat-icon>pending_actions</mat-icon>
+      </div>
+      <div>
+        <h1>Demandes de Réservation</h1>
+        <p>Gérez les demandes de séances soumises par vos patients</p>
+      </div>
+    </div>
+    <button mat-stroked-button (click)="loadAll()" [disabled]="loading">
+      <mat-icon>refresh</mat-icon> Actualiser
+    </button>
+  </div>
+
+  <div class="loading-wrapper" *ngIf="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Chargement des réservations...</p>
+  </div>
+
+  <mat-tab-group *ngIf="!loading" animationDuration="200ms" class="reservations-tabs">
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>schedule</mat-icon>
+        En attente
+        <span class="badge-count" *ngIf="pending.length > 0">{{ pending.length }}</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <ng-container *ngIf="pending.length > 0; else noPending">
+          <div class="reservation-card" *ngFor="let r of pending">
+            <ng-container *ngTemplateOutlet="reservationCard; context: { $implicit: r, showActions: true }"></ng-container>
+          </div>
+        </ng-container>
+        <ng-template #noPending>
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <h3>Aucune demande en attente</h3>
+            <p>Toutes les demandes ont été traitées.</p>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>event_available</mat-icon>
+        Acceptées
+      </ng-template>
+      <div class="tab-content">
+        <ng-container *ngIf="scheduled.length > 0; else noScheduled">
+          <div class="reservation-card" *ngFor="let r of scheduled">
+            <ng-container *ngTemplateOutlet="reservationCard; context: { $implicit: r, showActions: false }"></ng-container>
+          </div>
+        </ng-container>
+        <ng-template #noScheduled>
+          <div class="empty-state">
+            <mat-icon>event_available</mat-icon>
+            <h3>Aucune séance acceptée</h3>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>event_busy</mat-icon>
+        Refusées
+      </ng-template>
+      <div class="tab-content">
+        <ng-container *ngIf="cancelled.length > 0; else noCancelled">
+          <div class="reservation-card" *ngFor="let r of cancelled">
+            <ng-container *ngTemplateOutlet="reservationCard; context: { $implicit: r, showActions: false }"></ng-container>
+          </div>
+        </ng-container>
+        <ng-template #noCancelled>
+          <div class="empty-state">
+            <mat-icon>event_busy</mat-icon>
+            <h3>Aucune séance refusée</h3>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<ng-template #reservationCard let-r let-showActions="showActions">
+  <mat-card class="res-card" [class.online-card]="r.meetingMode === 'ONLINE'">
+    <div class="card-accent" [class.online]="r.meetingMode === 'ONLINE'" [class.presential]="r.meetingMode !== 'ONLINE'"></div>
+
+    <div class="card-body">
+      <div class="card-header-row">
+        <div class="session-icon" [class.online]="r.meetingMode === 'ONLINE'">
+          <mat-icon>{{ r.meetingMode === 'ONLINE' ? 'videocam' : 'person_pin' }}</mat-icon>
+        </div>
+        <div class="card-title-area">
+          <h3>{{ r.title }}</h3>
+          <p class="patient-id">
+            <mat-icon>person</mat-icon> Patient : {{ r.createdBy }}
+          </p>
+        </div>
+        <div class="status-badge" [ngClass]="getStatusClass(r.status)">
+          <mat-icon>{{ getStatusIcon(r.status) }}</mat-icon>
+          {{ getStatusLabel(r.status) }}
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <mat-icon>calendar_today</mat-icon>
+          <div>
+            <span class="info-label">Date</span>
+            <span class="info-value">{{ r.startTime | date: 'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <span class="info-label">Horaire</span>
+            <span class="info-value">{{ r.startTime | date: 'HH:mm' }} - {{ r.endTime | date: 'HH:mm' }}</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <mat-icon>{{ r.meetingMode === 'ONLINE' ? 'wifi' : 'location_on' }}</mat-icon>
+          <div>
+            <span class="info-label">Mode</span>
+            <span class="info-value">{{ r.meetingMode === 'ONLINE' ? 'En ligne (Meet)' : 'Présentielle' }}</span>
+          </div>
+        </div>
+        <div class="info-item" *ngIf="r.visibility">
+          <mat-icon>{{ r.visibility === 'PUBLIC' ? 'lock_open' : 'lock' }}</mat-icon>
+          <div>
+            <span class="info-label">Visibilité</span>
+            <span class="info-value">{{ r.visibility === 'PUBLIC' ? 'Publique' : 'Privée' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="session-description" *ngIf="r.description">{{ r.description }}</p>
+
+      <a *ngIf="r.meetingUrl" [href]="r.meetingUrl" target="_blank" class="meeting-url-link">
+        <mat-icon>link</mat-icon> Rejoindre la réunion
+      </a>
+
+      <div class="card-actions" *ngIf="showActions">
+        <button mat-raised-button color="primary" [disabled]="r._loading" (click)="accept(r)">
+          <mat-spinner *ngIf="r._loading === 'accept'" diameter="16"></mat-spinner>
+          <mat-icon *ngIf="r._loading !== 'accept'">check_circle</mat-icon>
+          Accepter
+        </button>
+        <button mat-stroked-button color="warn" [disabled]="r._loading" (click)="reject(r)">
+          <mat-spinner *ngIf="r._loading === 'reject'" diameter="16"></mat-spinner>
+          <mat-icon *ngIf="r._loading !== 'reject'">cancel</mat-icon>
+          Refuser
+        </button>
+      </div>
+    </div>
+  </mat-card>
+</ng-template>

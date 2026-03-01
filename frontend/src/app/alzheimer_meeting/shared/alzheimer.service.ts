@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, map, catchError, of } from 'rxjs';
+import { BehaviorSubject, Observable, map, catchError, of, retry } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
 export interface Session {
@@ -11,12 +12,16 @@ export interface Session {
     description?: string;
     isFavorite: boolean;
     participants?: string;
+    participantCount?: number;
     time?: string;
     startTime?: string;
     endTime?: string;
     meetingUrl?: string;
     status?: string;
     visibility?: string;
+    createdBy?: string;
+    meetingMode?: string;
+    sessionType?: string;
 }
 
 interface VirtualSessionResponse {
@@ -29,6 +34,8 @@ interface VirtualSessionResponse {
     createdBy: string;
     status: string;
     visibility: string;
+    sessionType?: string;
+    meetingMode?: string;
     createdAt: string;
     updatedAt: string;
     participants: any[];
@@ -39,16 +46,24 @@ interface VirtualSessionResponse {
 })
 export class AlzheimerService {
     private apiUrl = `${environment.apiUrl}/session`;
-    private userId = 'current-user';
+    private genericUserId = 'admin';
 
     private sessionsSubject = new BehaviorSubject<Session[]>([]);
 
-    constructor(private http: HttpClient) {
-        this.loadSessions();
+    constructor(
+        private http: HttpClient,
+        @Inject(PLATFORM_ID) private platformId: object
+    ) {
+        // Uniquement côté navigateur pour éviter NG0205 lors du SSR/hydration.
+        // L'injector côté serveur se détruit avant que la requête HTTP ne réponde.
+        if (isPlatformBrowser(this.platformId)) {
+            this.loadSessions();
+        }
     }
 
     loadSessions(): void {
         this.http.get<VirtualSessionResponse[]>(`${this.apiUrl}/sessions`).pipe(
+            retry({ count: 2, delay: 500 }),
             map(data => data.map(s => this.mapToSession(s)))
         ).subscribe({
             next: sessions => {
@@ -63,20 +78,27 @@ export class AlzheimerService {
 
     private mapToSession(s: VirtualSessionResponse): Session {
         const startDate = new Date(s.startTime);
+        const participantCount = s.participants?.length || 0;
+        const meetingMode = s.meetingMode ?? (s.meetingUrl ? 'ONLINE' : 'IN_PERSON');
+
         return {
             id: s.id,
             title: s.title,
             date: startDate,
             type: this.inferType(s.title, s.description),
             description: s.description,
-            isFavorite: s.participants?.some((p: any) => p.userId === this.userId && p.isFavorite) || false,
-            time: startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isFavorite: s.participants?.some((p: any) => p.userId === this.genericUserId && p.isFavorite) || false,
+            time: startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
             startTime: s.startTime,
             endTime: s.endTime,
             meetingUrl: s.meetingUrl,
             status: s.status,
             visibility: s.visibility,
-            participants: `${s.participants?.length || 0}`
+            participants: `${participantCount}`,
+            participantCount,
+            createdBy: s.createdBy,
+            sessionType: s.sessionType,
+            meetingMode
         };
     }
 
@@ -94,7 +116,7 @@ export class AlzheimerService {
     }
 
     getFavorites(): Observable<Session[]> {
-        return this.http.get<VirtualSessionResponse[]>(`${this.apiUrl}/users/${this.userId}/favorites`).pipe(
+        return this.http.get<VirtualSessionResponse[]>(`${this.apiUrl}/me/favorites`).pipe(
             map(data => data.map(s => ({ ...this.mapToSession(s), isFavorite: true }))),
             catchError(() => {
                 return this.sessionsSubject.pipe(map(sessions => sessions.filter(s => s.isFavorite)));
@@ -109,7 +131,7 @@ export class AlzheimerService {
 
         const newFavState = !session.isFavorite;
 
-        this.http.patch(`${this.apiUrl}/sessions/${id}/participants/${this.userId}/prefs`, {
+        this.http.patch(`${this.apiUrl}/sessions/${id}/participants/me/prefs`, {
             isFavorite: newFavState
         }).pipe(
             catchError(err => {

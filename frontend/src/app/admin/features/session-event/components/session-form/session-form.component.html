@@ -3,7 +3,7 @@
     <form [formGroup]="sessionForm" class="form-grid">
         <mat-form-field appearance="outline" class="full-width">
             <mat-label>Titre de la session</mat-label>
-            <input matInput formControlName="title" placeholder="Ex. Atelier Mémoire">
+            <input matInput formControlName="title" placeholder="Ex. Atelier MÃ©moire">
             <mat-icon matPrefix>event</mat-icon>
             <mat-error *ngIf="sessionForm.get('title')?.hasError('required')">Le titre est requis</mat-error>
         </mat-form-field>
@@ -24,7 +24,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-            <mat-label>Heure de début</mat-label>
+            <mat-label>Heure de dÃ©but</mat-label>
             <input matInput type="time" formControlName="startTime">
             <mat-error *ngIf="sessionForm.get('startTime')?.hasError('required')">Requis</mat-error>
         </mat-form-field>
@@ -36,10 +36,26 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-            <mat-label>Visibilité</mat-label>
+            <mat-label>VisibilitÃ©</mat-label>
             <mat-select formControlName="visibility">
                 <mat-option *ngFor="let opt of visibilityOptions" [value]="opt.value">{{ opt.label }}</mat-option>
             </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Type de session</mat-label>
+            <mat-select formControlName="sessionType">
+                <mat-option *ngFor="let opt of sessionTypeOptions" [value]="opt.value">{{ opt.label }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="sessionForm.get('sessionType')?.hasError('required')">Requis</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Mode de reunion</mat-label>
+            <mat-select formControlName="meetingMode">
+                <mat-option *ngFor="let opt of meetingModeOptions" [value]="opt.value">{{ opt.label }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="sessionForm.get('meetingMode')?.hasError('required')">Requis</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -49,7 +65,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-            <mat-label>URL de la réunion</mat-label>
+            <mat-label>URL de la rÃ©union</mat-label>
             <input matInput formControlName="meetingUrl" placeholder="https://meet.example.com/...">
             <mat-icon matPrefix>videocam</mat-icon>
         </mat-form-field>
@@ -59,12 +75,18 @@
             <textarea matInput formControlName="description" rows="3"
                 placeholder="Description de la session..."></textarea>
         </mat-form-field>
+        <div class="form-alert error full-width" *ngIf="formError">
+            {{ formError }}
+        </div>
     </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-    <button mat-button (click)="onCancel()" class="cancel-btn">Annuler</button>
-    <button mat-raised-button color="primary" [disabled]="sessionForm.invalid" (click)="onSubmit()" class="submit-btn">
+    <button mat-button (click)="onCancel()" class="cancel-btn" [disabled]="isSubmitting">Annuler</button>
+    <button mat-raised-button color="primary" [disabled]="sessionForm.invalid || isSubmitting" (click)="onSubmit()"
+        class="submit-btn">
         <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
-        {{ isEditMode ? 'Enregistrer' : 'Créer la session' }}
+        {{ isSubmitting ? 'Enregistrement...' : (isEditMode ? 'Enregistrer' : 'Creer la session') }}
     </button>
 </mat-dialog-actions>
+
+

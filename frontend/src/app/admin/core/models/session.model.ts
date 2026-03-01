@@ -8,6 +8,8 @@ export interface Session {
     participantsCount: number;
     description?: string;
     visibility?: 'PRIVATE' | 'PUBLIC';
+    sessionType?: 'PRIVATE' | 'GROUP';
+    meetingMode?: 'ONLINE' | 'IN_PERSON';
     meetingUrl?: string;
     createdBy?: string;
     createdAt?: string;

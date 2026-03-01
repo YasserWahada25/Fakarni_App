@@ -1,7 +1,7 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { firstValueFrom, skip } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { AlzheimerService } from './alzheimer.service';
 
 describe('AlzheimerService', () => {
@@ -32,9 +32,9 @@ describe('AlzheimerService', () => {
     });
 
     it('should call favorites API and map favorite sessions', async () => {
-        const favoritesPromise = firstValueFrom(service.getFavorites().pipe(skip(1)));
+        const favoritesPromise = firstValueFrom(service.getFavorites());
 
-        const favoritesRequest = httpMock.expectOne('/session/users/current-user/favorites');
+        const favoritesRequest = httpMock.expectOne('/session/me/favorites');
         favoritesRequest.flush([
             buildSessionResponse({
                 id: 1,
@@ -53,8 +53,9 @@ describe('AlzheimerService', () => {
     it('should add favorite via PUT endpoint and update local state', async () => {
         service.toggleFavorite(1);
 
-        const addFavoriteRequest = httpMock.expectOne('/session/sessions/1/favorites/current-user');
-        expect(addFavoriteRequest.request.method).toBe('PUT');
+        const addFavoriteRequest = httpMock.expectOne('/session/sessions/1/participants/me/prefs');
+        expect(addFavoriteRequest.request.method).toBe('PATCH');
+        expect(addFavoriteRequest.request.body).toEqual({ isFavorite: true });
         addFavoriteRequest.flush(buildSessionResponse({
             id: 1,
             title: 'Session A',
@@ -67,7 +68,9 @@ describe('AlzheimerService', () => {
 
     it('should remove favorite via DELETE endpoint and update local state', async () => {
         service.toggleFavorite(1);
-        const addFavoriteRequest = httpMock.expectOne('/session/sessions/1/favorites/current-user');
+        const addFavoriteRequest = httpMock.expectOne('/session/sessions/1/participants/me/prefs');
+        expect(addFavoriteRequest.request.method).toBe('PATCH');
+        expect(addFavoriteRequest.request.body).toEqual({ isFavorite: true });
         addFavoriteRequest.flush(buildSessionResponse({
             id: 1,
             title: 'Session A',
@@ -75,8 +78,9 @@ describe('AlzheimerService', () => {
         }));
 
         service.toggleFavorite(1);
-        const removeFavoriteRequest = httpMock.expectOne('/session/sessions/1/favorites/current-user');
-        expect(removeFavoriteRequest.request.method).toBe('DELETE');
+        const removeFavoriteRequest = httpMock.expectOne('/session/sessions/1/participants/me/prefs');
+        expect(removeFavoriteRequest.request.method).toBe('PATCH');
+        expect(removeFavoriteRequest.request.body).toEqual({ isFavorite: false });
         removeFavoriteRequest.flush(buildSessionResponse({
             id: 1,
             title: 'Session A',
@@ -103,7 +107,7 @@ function buildSessionResponse(options: { id: number; title: string; isFavorite: 
         updatedAt: '2026-02-20T09:00:00Z',
         participants: [
             {
-                userId: 'current-user',
+                userId: 'admin',
                 isFavorite: options.isFavorite
             }
         ]

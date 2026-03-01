@@ -1,6 +1,6 @@
 <div class="meeting-container">
     <!-- Main Content Area -->
-    <div class="main-content" [class.sidebar-open]="isSidebarOpen">
+    <div class="main-content">
         <!-- Header/Top Bar (Optional, can be overlay) -->
         <div class="meeting-header">
             <h2>{{ sessionTitle }}</h2>
@@ -8,16 +8,30 @@
         </div>
 
         <!-- Video Grid -->
-        <app-video-grid></app-video-grid>
+        <app-video-grid [roomId]="roomId" [currentUserId]="currentUser"></app-video-grid>
 
         <!-- Bottom Controls -->
-        <app-meeting-controls (toggleSidebar)="toggleSidebar($event)" (leave)="onLeaveMeeting()">
+        <app-meeting-controls
+            [isMuted]="isMuted"
+            [isVideoOff]="isVideoOff"
+            [participantsCount]="participantCount"
+            [meetingLabel]="sessionTitle"
+            (toggleSidebar)="toggleSidebar($event)"
+            (toggleMute)="onToggleMute()"
+            (toggleVideo)="onToggleVideo()"
+            (shareScreen)="onShareScreen()"
+            (leave)="onLeaveMeeting()">
         </app-meeting-controls>
     </div>
 
     <!-- Sidebar -->
     <div class="meeting-sidebar" *ngIf="isSidebarOpen">
-        <app-meeting-sidebar [activeTab]="activeSidebarTab" (close)="isSidebarOpen = false">
+        <app-meeting-sidebar
+            [activeTab]="activeSidebarTab"
+            [roomId]="roomId"
+            [currentUser]="currentUser"
+            [sessionId]="sessionId"
+            (close)="isSidebarOpen = false">
         </app-meeting-sidebar>
     </div>
 </div>

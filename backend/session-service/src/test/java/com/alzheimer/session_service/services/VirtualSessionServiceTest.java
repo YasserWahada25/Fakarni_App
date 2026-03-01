@@ -5,6 +5,7 @@ import com.alzheimer.session_service.entities.JoinStatus;
 import com.alzheimer.session_service.entities.ParticipantRole;
 import com.alzheimer.session_service.entities.SessionParticipant;
 import com.alzheimer.session_service.entities.SessionStatus;
+import com.alzheimer.session_service.entities.SessionType;
 import com.alzheimer.session_service.entities.SessionVisibility;
 import com.alzheimer.session_service.entities.VirtualSession;
 import com.alzheimer.session_service.repositories.VirtualSessionRepository;
@@ -45,12 +46,12 @@ class VirtualSessionServiceTest {
         when(repository.findById(1L)).thenReturn(Optional.of(session));
         when(repository.save(any(VirtualSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        VirtualSession updated = service.updateParticipantPrefs(1L, " patient-001 ", request);
+        VirtualSession updated = service.updateParticipantPrefs(1L, request);
 
         assertNotNull(updated);
         assertEquals(1, updated.getParticipants().size());
         SessionParticipant participant = updated.getParticipants().get(0);
-        assertEquals("patient-001", participant.getUserId());
+        assertEquals("admin", participant.getUserId());
         assertEquals(ParticipantRole.PARTICIPANT, participant.getRole());
         assertEquals(JoinStatus.INVITED, participant.getJoinStatus());
         assertTrue(participant.isFavorite());
@@ -62,7 +63,7 @@ class VirtualSessionServiceTest {
         VirtualSession session = buildSession(2L);
         session.getParticipants().add(
                 SessionParticipant.builder()
-                        .userId("patient-002")
+                        .userId("admin")
                         .role(ParticipantRole.PARTICIPANT)
                         .joinStatus(JoinStatus.CONFIRMED)
                         .isFavorite(true)
@@ -72,7 +73,7 @@ class VirtualSessionServiceTest {
         when(repository.findById(2L)).thenReturn(Optional.of(session));
         when(repository.save(any(VirtualSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        VirtualSession updated = service.setFavorite(2L, "patient-002", false);
+        VirtualSession updated = service.setFavorite(2L, false);
 
         assertNotNull(updated);
         assertFalse(updated.getParticipants().get(0).isFavorite());
@@ -84,7 +85,7 @@ class VirtualSessionServiceTest {
         VirtualSession favoriteSession = buildSession(10L);
         favoriteSession.getParticipants().add(
                 SessionParticipant.builder()
-                        .userId("patient-003")
+                        .userId("admin")
                         .role(ParticipantRole.PARTICIPANT)
                         .joinStatus(JoinStatus.CONFIRMED)
                         .isFavorite(true)
@@ -94,20 +95,34 @@ class VirtualSessionServiceTest {
         VirtualSession nonFavoriteSession = buildSession(11L);
         nonFavoriteSession.getParticipants().add(
                 SessionParticipant.builder()
-                        .userId("patient-003")
+                        .userId("admin")
                         .role(ParticipantRole.PARTICIPANT)
                         .joinStatus(JoinStatus.CONFIRMED)
                         .isFavorite(false)
                         .build()
         );
 
-        when(repository.findByParticipantUserId("patient-003"))
+        when(repository.findByParticipantUserId("admin"))
                 .thenReturn(List.of(favoriteSession, nonFavoriteSession));
 
-        List<VirtualSession> favorites = service.listUserFavorites(" patient-003 ");
+        List<VirtualSession> favorites = service.listUserFavorites();
 
         assertEquals(1, favorites.size());
         assertEquals(10L, favorites.get(0).getId());
+    }
+
+    @Test
+    void list_withOnlyStatus_filtersByStatus() {
+        VirtualSession pending = buildSession(20L);
+        pending.setStatus(SessionStatus.DRAFT);
+
+        when(repository.findByStatus(SessionStatus.DRAFT)).thenReturn(List.of(pending));
+
+        List<VirtualSession> result = service.list(null, null, SessionStatus.DRAFT);
+
+        assertEquals(1, result.size());
+        assertEquals(SessionStatus.DRAFT, result.get(0).getStatus());
+        verify(repository).findByStatus(SessionStatus.DRAFT);
     }
 
     private VirtualSession buildSession(Long id) {
@@ -120,6 +135,7 @@ class VirtualSessionServiceTest {
                 .createdBy("admin")
                 .status(SessionStatus.SCHEDULED)
                 .visibility(SessionVisibility.PUBLIC)
+                .sessionType(SessionType.GROUP)
                 .build();
     }
 }

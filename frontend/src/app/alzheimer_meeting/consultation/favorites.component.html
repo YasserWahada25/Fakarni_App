@@ -51,10 +51,11 @@
             <p class="desc">{{ session.description }}</p>
 
             <div class="card-actions">
-                <button class="join-btn" (click)="joinMeeting(session)">
-                    <i class="fa-solid fa-video"></i> Join
+                <button class="join-btn" (click)="joinMeeting(session)" [disabled]="joiningSessionId === session.id || ((session.meetingMode || '').toUpperCase() === 'IN_PERSON')">
+                    <i class="fa-solid fa-video"></i> {{ joiningSessionId === session.id ? 'Connecting...' : 'Join' }}
                 </button>
             </div>
+            <p class="join-error" *ngIf="joinErrors[session.id]">{{ joinErrors[session.id] }}</p>
         </div>
     </div>
 </div>

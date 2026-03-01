@@ -2,6 +2,9 @@ package com.alzheimer.session_service.controllers;
 
 import com.alzheimer.session_service.services.VirtualSessionService.BadRequestException;
 import com.alzheimer.session_service.services.VirtualSessionService.NotFoundException;
+import com.alzheimer.session_service.services.VideoSessionService.UnauthorizedException;
+import com.alzheimer.session_service.services.VideoSessionService.VideoSessionFullException;
+import com.alzheimer.session_service.services.VideoSessionService.VideoSessionAlreadyExistsException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +29,6 @@ public class ApiExceptionHandler {
             String message = fieldError.getDefaultMessage();
             fieldErrors.putIfAbsent(field, (message == null || message.isBlank()) ? "Champ invalide." : message);
         }
-
         return buildResponse(HttpStatus.BAD_REQUEST, "Veuillez corriger les champs invalides.", fieldErrors);
     }
 
@@ -53,10 +55,34 @@ public class ApiExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), Map.of());
     }
 
+    // ─── Exceptions Video Session ─────────────────────────────────────────────────
+
+    /** HTTP 403 – Utilisateur non autorisé à effectuer cette action sur la session vidéo. */
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), Map.of());
+    }
+
+    /** HTTP 409 – La room vidéo est pleine (maxParticipants atteint). */
+    @ExceptionHandler(VideoSessionFullException.class)
+    public ResponseEntity<Map<String, Object>> handleVideoSessionFull(VideoSessionFullException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), Map.of());
+    }
+
+    /** HTTP 409 – Une session vidéo active existe déjà pour cette VirtualSession. */
+    @ExceptionHandler(VideoSessionAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleVideoSessionAlreadyExists(VideoSessionAlreadyExistsException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), Map.of());
+    }
+
+    // ─── Catch-all ───────────────────────────────────────────────────────────────
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur serveur interne.", Map.of());
     }
+
+    // ─── Utilitaires ─────────────────────────────────────────────────────────────
 
     private ResponseEntity<Map<String, Object>> buildResponse(
             HttpStatus status,
@@ -75,7 +101,6 @@ public class ApiExceptionHandler {
         if (message == null || message.isBlank()) {
             return "Requete invalide.";
         }
-
         String normalized = message.toLowerCase();
         if (normalized.contains("sessionstatus")) {
             return "Le statut fourni est invalide.";
@@ -86,7 +111,9 @@ public class ApiExceptionHandler {
         if (normalized.contains("endtime must be after starttime")) {
             return "L'heure de fin doit etre apres l'heure de debut.";
         }
-
+        if (normalized.contains("meetingurl is required for online sessions")) {
+            return "Le lien de reunion est obligatoire pour une seance en ligne.";
+        }
         return message;
     }
 }

@@ -17,7 +17,7 @@ import { SessionFormComponent } from '../session-form/session-form.component';
 export class SessionListComponent implements OnInit, AfterViewInit {
     sessions: Session[] = [];
     dataSource: MatTableDataSource<Session>;
-    displayedColumns: string[] = ['title', 'date', 'startTime', 'status', 'participants', 'actions'];
+    displayedColumns: string[] = ['title', 'date', 'startTime', 'status', 'sessionType', 'meetingMode', 'participants', 'actions'];
     selectedDate: Date | null = null;
     readonly allowAllDates = (_: Date | null): boolean => true;
 
@@ -46,6 +46,7 @@ export class SessionListComponent implements OnInit, AfterViewInit {
         this.sessionService.getSessions().subscribe(data => {
             this.sessions = data;
             this.applyDateFilter();
+            this.paginator?.firstPage();
             this.syncTableControls();
             this.cdr.detectChanges();
         });
@@ -108,6 +109,7 @@ export class SessionListComponent implements OnInit, AfterViewInit {
     private applyDateFilter(): void {
         if (!this.selectedDate) {
             this.dataSource.data = this.sessions;
+            this.paginator?.firstPage();
             this.syncTableControls();
             return;
         }
@@ -115,6 +117,7 @@ export class SessionListComponent implements OnInit, AfterViewInit {
         this.sessionService.getSessionsByDate(this.selectedDate).subscribe({
             next: data => {
                 this.dataSource.data = data;
+                this.paginator?.firstPage();
                 this.syncTableControls();
                 this.cdr.detectChanges();
             },
@@ -123,6 +126,7 @@ export class SessionListComponent implements OnInit, AfterViewInit {
                 this.dataSource.data = this.sessions.filter(session =>
                     this.toDateKey(session.date) === selectedDateKey
                 );
+                this.paginator?.firstPage();
                 this.syncTableControls();
                 this.cdr.detectChanges();
             }
