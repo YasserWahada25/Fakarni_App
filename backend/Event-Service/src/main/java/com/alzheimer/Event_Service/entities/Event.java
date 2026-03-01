@@ -14,6 +14,9 @@ public class Event {
     @Column(nullable = false, length = 120)
     private String title;
 
+    @Column(length = 500)
+    private String description;
+
     @Column(nullable = false)
     private LocalDateTime startDateTime;
 
@@ -24,7 +27,7 @@ public class Event {
     private boolean remindEnabled = false;
 
     @Column(nullable = false)
-    private Long userId; // ou patientId
+    private Long userId; // le plannificateur d'evenement
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -40,6 +43,9 @@ public class Event {
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
     public LocalDateTime getStartDateTime() { return startDateTime; }
     public void setStartDateTime(LocalDateTime startDateTime) { this.startDateTime = startDateTime; }

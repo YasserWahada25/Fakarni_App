@@ -1,14 +1,14 @@
 package com.alzheimer.Event_Service.services;
 
-
 import com.alzheimer.Event_Service.dto.EventCreateRequest;
 import com.alzheimer.Event_Service.dto.EventResponse;
-import com.alzheimer.Event_Service.dto.EventUpdateRequest;
 import com.alzheimer.Event_Service.entities.Event;
 import com.alzheimer.Event_Service.repositories.EventRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EventService {
@@ -19,60 +19,52 @@ public class EventService {
         this.eventRepository = eventRepository;
     }
 
+    // Création d'un événement
     public EventResponse create(EventCreateRequest request) {
         Event event = new Event();
         event.setTitle(request.getTitle());
+        event.setDescription(request.getDescription());
         event.setStartDateTime(request.getStartDateTime());
         event.setLocation(request.getLocation());
         event.setRemindEnabled(request.isRemindEnabled());
         event.setUserId(request.getUserId());
+        // createdAt is set automatically via @PrePersist
 
-        return toResponse(eventRepository.save(event));
+        Event savedEvent = eventRepository.save(event);
+        return new EventResponse(savedEvent);
     }
 
-    public EventResponse update(Long id, EventUpdateRequest request) {
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Event not found: " + id));
-
+    // Mise à jour d'un événement
+    public EventResponse update(Long id, EventCreateRequest request) {
+        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
         event.setTitle(request.getTitle());
+        event.setDescription(request.getDescription());
         event.setStartDateTime(request.getStartDateTime());
         event.setLocation(request.getLocation());
         event.setRemindEnabled(request.isRemindEnabled());
         event.setUserId(request.getUserId());
+        // createdAt must NOT be modified (updatable = false)
 
-        return toResponse(eventRepository.save(event));
+        Event updatedEvent = eventRepository.save(event);
+        return new EventResponse(updatedEvent);
     }
 
+    // Récupérer un événement par ID
     public EventResponse getById(Long id) {
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Event not found: " + id));
-        return toResponse(event);
+        Event event = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found"));
+        return new EventResponse(event);
     }
 
+    // Récupérer tous les événements
     public List<EventResponse> getAll() {
-        return eventRepository.findAll().stream().map(this::toResponse).toList();
+        List<Event> events = eventRepository.findAll();
+        return events.stream()
+                .map(EventResponse::new)
+                .collect(Collectors.toList());
     }
 
-    public List<EventResponse> getByUserId(Long userId) {
-        return eventRepository.findByUserId(userId).stream().map(this::toResponse).toList();
-    }
-
+    // Supprimer un événement
     public void delete(Long id) {
-        if (!eventRepository.existsById(id)) {
-            throw new RuntimeException("Event not found: " + id);
-        }
         eventRepository.deleteById(id);
-    }
-
-    private EventResponse toResponse(Event event) {
-        EventResponse r = new EventResponse();
-        r.setId(event.getId());
-        r.setTitle(event.getTitle());
-        r.setStartDateTime(event.getStartDateTime());
-        r.setLocation(event.getLocation());
-        r.setRemindEnabled(event.isRemindEnabled());
-        r.setUserId(event.getUserId());
-        r.setCreatedAt(event.getCreatedAt());
-        return r;
     }
 }
