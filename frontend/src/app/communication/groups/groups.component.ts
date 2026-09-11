@@ -7,7 +7,7 @@ import { UploadService } from './services/upload.service';
 import { Group, GroupType, MemberRole } from './models/group.model';
 import { forkJoin, of } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-groups',

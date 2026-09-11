@@ -7,7 +7,7 @@ import {
   AnalyseIRMResponse, DetectionService,
   DossierMedicalResponse, PatientUser
 } from '../services/detection';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-follow-up',
