@@ -46,10 +46,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: "Set image tag"
-        id: tag
-        run: echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
-
       - name: "Build & Push Docker image"
         uses: docker/build-push-action@v5
         with:
@@ -58,33 +54,23 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/fakarni-frontend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/fakarni-frontend:${{ steps.tag.outputs.tag }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/fakarni-frontend:${{ github.sha }}
 
-      - name: "Deploy to Azure Web App"
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: "Update Azure frontend image"
+      - name: "Trigger Azure Web App redeploy via webhook"
         run: |
-          az webapp config container set \
-            --name "fakarni-frontend" \
-            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
-            --docker-custom-image-name "${{ secrets.DOCKERHUB_USERNAME }}/fakarni-frontend:${{ steps.tag.outputs.tag }}" \
-            --docker-registry-server-url "https://index.docker.io" \
-            --docker-registry-server-user "${{ secrets.DOCKERHUB_USERNAME }}" \
-            --docker-registry-server-password "${{ secrets.DOCKERHUB_TOKEN }}"
-
-      - name: "Restart Web App"
-        run: |
-          az webapp restart \
-            --name "fakarni-frontend" \
-            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${{ secrets.AZURE_FRONTEND_WEBHOOK_URL }}" \
+            --max-time 30)
+          echo "Azure webhook response: HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "202" ]; then
+            echo "Warning: webhook returned $HTTP_CODE (may still deploy)"
+          fi
 
       - name: "Build Summary"
         run: |
-          echo "### Frontend Deploy OK" >> $GITHUB_STEP_SUMMARY
+          echo "### Frontend Deploy Triggered" >> $GITHUB_STEP_SUMMARY
           echo "| Info | Valeur |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Image | \`${{ secrets.DOCKERHUB_USERNAME }}/fakarni-frontend:${{ steps.tag.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| URL | https://fakarni-frontend.azurewebsites.net |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image latest | \`${{ secrets.DOCKERHUB_USERNAME }}/fakarni-frontend:latest\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image SHA | \`${{ secrets.DOCKERHUB_USERNAME }}/fakarni-frontend:${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| URL Frontend | https://fakarni-frontend.azurewebsites.net |" >> $GITHUB_STEP_SUMMARY
