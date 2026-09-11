@@ -1,5 +1,5 @@
-﻿# CI â€” Event Service (EvÃ©nements + Mailtrap + Nominatim + MySQL)
-name: CI â€” Event Service
+# CI - Event Service (Mailtrap + Nominatim + MySQL)
+name: "CI - Event Service"
 
 on:
   push:
@@ -7,10 +7,17 @@ on:
     paths:
       - 'backend/Event-Service/**'
       - '.github/workflows/ci-event-service.yml'
+      - '.github/workflows/ci-reusable.yml'
   pull_request:
     branches: [main]
     paths:
       - 'backend/Event-Service/**'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Raison du declenchement manuel"
+        required: false
+        default: "Test manuel"
 
 jobs:
   ci:

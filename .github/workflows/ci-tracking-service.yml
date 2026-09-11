@@ -1,5 +1,5 @@
-﻿# CI â€” Tracking Service (GPS + Twilio SMS + MySQL)
-name: CI â€” Tracking Service
+# CI - Tracking Service (GPS + Twilio SMS + MySQL)
+name: "CI - Tracking Service"
 
 on:
   push:
@@ -7,10 +7,17 @@ on:
     paths:
       - 'backend/Tracking-Service/**'
       - '.github/workflows/ci-tracking-service.yml'
+      - '.github/workflows/ci-reusable.yml'
   pull_request:
     branches: [main]
     paths:
       - 'backend/Tracking-Service/**'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Raison du declenchement manuel"
+        required: false
+        default: "Test manuel"
 
 jobs:
   ci:

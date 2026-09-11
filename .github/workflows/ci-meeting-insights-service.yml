@@ -1,5 +1,5 @@
-﻿# CI â€” Meeting Insights Service (Transcriptions + Python IA + MongoDB)
-name: CI â€” Meeting Insights Service
+# CI - Meeting Insights Service (Transcriptions Virtual Cafe + MongoDB)
+name: "CI - Meeting Insights Service"
 
 on:
   push:
@@ -7,10 +7,17 @@ on:
     paths:
       - 'backend/meeting-insights-service/**'
       - '.github/workflows/ci-meeting-insights-service.yml'
+      - '.github/workflows/ci-reusable.yml'
   pull_request:
     branches: [main]
     paths:
       - 'backend/meeting-insights-service/**'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Raison du declenchement manuel"
+        required: false
+        default: "Test manuel"
 
 jobs:
   ci:

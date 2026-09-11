@@ -1,5 +1,5 @@
-﻿# CI â€” Post Service (RÃ©seau social interne + JWT + MySQL)
-name: CI â€” Post Service
+# CI - Post Service (Reseau social interne + MySQL)
+name: "CI - Post Service"
 
 on:
   push:
@@ -7,10 +7,17 @@ on:
     paths:
       - 'backend/Post-Service/**'
       - '.github/workflows/ci-post-service.yml'
+      - '.github/workflows/ci-reusable.yml'
   pull_request:
     branches: [main]
     paths:
       - 'backend/Post-Service/**'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Raison du declenchement manuel"
+        required: false
+        default: "Test manuel"
 
 jobs:
   ci:

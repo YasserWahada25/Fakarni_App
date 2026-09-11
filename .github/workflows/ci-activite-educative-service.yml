@@ -1,5 +1,5 @@
-﻿# CI â€” Activite Educative Service (Jeux cognitifs + MySQL)
-name: CI â€” Activite Educative Service
+# CI - Activite Educative Service (Upload images + MySQL)
+name: "CI - Activite Educative Service"
 
 on:
   push:
@@ -7,10 +7,17 @@ on:
     paths:
       - 'backend/activite-educative-service/**'
       - '.github/workflows/ci-activite-educative-service.yml'
+      - '.github/workflows/ci-reusable.yml'
   pull_request:
     branches: [main]
     paths:
       - 'backend/activite-educative-service/**'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Raison du declenchement manuel"
+        required: false
+        default: "Test manuel"
 
 jobs:
   ci:

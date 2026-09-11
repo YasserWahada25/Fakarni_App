@@ -1,5 +1,5 @@
-﻿# CI â€” Flask IA Service (Python + TensorFlow + EfficientNetB3)
-name: CI â€” Flask IA Service
+# CI - Flask IA Service (Python + TensorFlow + EfficientNetB3)
+name: "CI - Flask IA Service"
 
 on:
   push:
@@ -7,10 +7,17 @@ on:
     paths:
       - 'detection-alzheimer/**'
       - '.github/workflows/ci-flask-ia-service.yml'
+      - '.github/workflows/ci-reusable.yml'
   pull_request:
     branches: [main]
     paths:
       - 'detection-alzheimer/**'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Raison du declenchement manuel"
+        required: false
+        default: "Test manuel"
 
 jobs:
   ci:

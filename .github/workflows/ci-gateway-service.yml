@@ -1,5 +1,5 @@
-﻿# CI â€” Gateway Service (API Gateway + JWT)
-name: CI â€” Gateway Service
+# CI - Gateway Service (Spring Cloud Gateway WebFlux + JWT)
+name: "CI - Gateway Service"
 
 on:
   push:
@@ -7,10 +7,17 @@ on:
     paths:
       - 'backend/Gateway-Service/**'
       - '.github/workflows/ci-gateway-service.yml'
+      - '.github/workflows/ci-reusable.yml'
   pull_request:
     branches: [main]
     paths:
       - 'backend/Gateway-Service/**'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Raison du declenchement manuel"
+        required: false
+        default: "Test manuel"
 
 jobs:
   ci:

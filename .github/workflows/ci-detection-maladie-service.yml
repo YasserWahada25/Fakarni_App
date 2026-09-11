@@ -1,5 +1,5 @@
-﻿# CI â€” Detection Maladie Service (IRM + Feignâ†’DossierMedical + MySQL)
-name: CI â€” Detection Maladie Service
+# CI - Detection Maladie Service (IRM + Flask Python IA + MySQL)
+name: "CI - Detection Maladie Service"
 
 on:
   push:
@@ -7,10 +7,17 @@ on:
     paths:
       - 'backend/Detection_Maladie-Service/**'
       - '.github/workflows/ci-detection-maladie-service.yml'
+      - '.github/workflows/ci-reusable.yml'
   pull_request:
     branches: [main]
     paths:
       - 'backend/Detection_Maladie-Service/**'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Raison du declenchement manuel"
+        required: false
+        default: "Test manuel"
 
 jobs:
   ci:
