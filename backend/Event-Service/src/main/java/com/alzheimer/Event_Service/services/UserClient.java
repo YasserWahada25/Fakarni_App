@@ -7,12 +7,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.Map;
 
 /**
- * Client Feign vers la Gateway ou le User-Service (identifiants utilisateur Mongo = {@link String}).
+ * Client Feign vers le User-Service via Eureka (Spring Cloud LoadBalancer).
+ * Le nom "User-Service" correspond exactement au spring.application.name du service cible.
+ * L'URL est résolue dynamiquement via Eureka — plus de dépendance hardcodée sur la Gateway.
  */
-@FeignClient(name = "user-service", url = "${feign.user-service.url:http://localhost:8090}")
+@FeignClient(name = "User-Service")
 public interface UserClient {
 
     @GetMapping("/api/users/{id}")
     Map<String, Object> getUserById(@PathVariable("id") String id);
 }
-

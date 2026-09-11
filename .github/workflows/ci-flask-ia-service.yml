@@ -1,0 +1,32 @@
+﻿# CI â€” Flask IA Service (Python + TensorFlow + EfficientNetB3)
+name: CI â€” Flask IA Service
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'detection-alzheimer/**'
+      - '.github/workflows/ci-flask-ia-service.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'detection-alzheimer/**'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci-reusable.yml
+    with:
+      service-name: "Flask IA Service"
+      service-path: "detection-alzheimer/detection-alzheimer"
+      image-name: "fakarni-flask-ia-service"
+      sonar-project-key: "fakarni-flask-ia-service"
+      is-java: false
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      CONTAINER_APPS_ENV: ${{ secrets.CONTAINER_APPS_ENV }}

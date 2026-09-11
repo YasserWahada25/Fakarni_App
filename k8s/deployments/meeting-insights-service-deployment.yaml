@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meeting-insights-service
+  namespace: fakarni-prod
+  labels:
+    app: meeting-insights-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: meeting-insights-service
+  template:
+    metadata:
+      labels:
+        app: meeting-insights-service
+    spec:
+      containers:
+        - name: meeting-insights-service
+          image: fakarnicr.azurecr.io/fakarni-meeting-insights-service:latest
+          ports:
+            - containerPort: 8096
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: fakarni-common-config
+                  key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+            - name: SPRING_DATA_MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: fakarni-secrets
+                  key: MONGODB_URI
+          resources:
+            requests:
+              memory: "384Mi"
+              cpu: "150m"
+            limits:
+              memory: "768Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8096
+            initialDelaySeconds: 40
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8096
+            initialDelaySeconds: 70
+            periodSeconds: 15

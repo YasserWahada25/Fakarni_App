@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dossier-medical-service
+  namespace: fakarni-prod
+  labels:
+    app: dossier-medical-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dossier-medical-service
+  template:
+    metadata:
+      labels:
+        app: dossier-medical-service
+    spec:
+      containers:
+        - name: dossier-medical-service
+          image: fakarnicr.azurecr.io/fakarni-dossier-medical-service:latest
+          ports:
+            - containerPort: 8059
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: fakarni-common-config
+                  key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://fakarni-mysql.mysql.database.azure.com:3306/dossier_medical_db?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=true"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: fakarni-common-config
+                  key: MYSQL_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: fakarni-secrets
+                  key: MYSQL_PASSWORD
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "400m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8059
+            initialDelaySeconds: 40
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8059
+            initialDelaySeconds: 70
+            periodSeconds: 15

@@ -1,0 +1,32 @@
+﻿# CI â€” Event Service (EvÃ©nements + Mailtrap + Nominatim + MySQL)
+name: CI â€” Event Service
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/Event-Service/**'
+      - '.github/workflows/ci-event-service.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/Event-Service/**'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci-reusable.yml
+    with:
+      service-name: "Event Service"
+      service-path: "backend/Event-Service"
+      image-name: "fakarni-event-service"
+      sonar-project-key: "fakarni-event-service"
+      is-java: true
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      CONTAINER_APPS_ENV: ${{ secrets.CONTAINER_APPS_ENV }}

@@ -1,0 +1,184 @@
+# ============================================================
+# WORKFLOW CI REUSABLE — FakarniApp
+# Architecture : Docker Hub + Azure Container Apps
+# Appelé par chaque ci-{service}.yml via workflow_call
+# ============================================================
+name: CI Reusable
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+      service-path:
+        required: true
+        type: string
+      image-name:
+        required: true
+        type: string
+      sonar-project-key:
+        required: true
+        type: string
+      is-java:
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
+      SONAR_TOKEN:
+        required: true
+      # Azure (optionnel — requis seulement quand CD est active)
+      AZURE_CLIENT_ID:
+        required: false
+      AZURE_TENANT_ID:
+        required: false
+      AZURE_SUBSCRIPTION_ID:
+        required: false
+      AZURE_RESOURCE_GROUP:
+        required: false
+      CONTAINER_APPS_ENV:
+        required: false
+    outputs:
+      image-tag:
+        description: "Short SHA du commit"
+        value: ${{ jobs.ci.outputs.image-tag }}
+
+jobs:
+  ci:
+    name: CI — ${{ inputs.service-name }}
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.short-sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute image tag
+        id: meta
+        run: echo "short-sha=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+
+      # ── Java / Spring Boot ──────────────────────────────
+      - name: Setup Java 21
+        if: ${{ inputs.is-java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven
+        if: ${{ inputs.is-java }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ inputs.service-name }}-${{ hashFiles(format('{0}/pom.xml', inputs.service-path)) }}
+          restore-keys: |
+            maven-${{ inputs.service-name }}-
+            maven-
+
+      - name: Build
+        if: ${{ inputs.is-java }}
+        working-directory: ${{ inputs.service-path }}
+        run: mvn clean compile -DskipTests -B
+
+      - name: Test + JaCoCo
+        if: ${{ inputs.is-java }}
+        working-directory: ${{ inputs.service-path }}
+        run: mvn test -B
+
+      - name: Publish test results
+        if: ${{ inputs.is-java && always() }}
+        uses: dorny/test-reporter@v1
+        with:
+          name: Tests — ${{ inputs.service-name }}
+          path: ${{ inputs.service-path }}/**/target/surefire-reports/*.xml
+          reporter: java-junit
+          fail-on-error: false
+
+      - name: SonarCloud analysis
+        if: ${{ inputs.is-java }}
+        working-directory: ${{ inputs.service-path }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=${{ inputs.sonar-project-key }} \
+            -Dsonar.projectName="${{ inputs.service-name }}" \
+            -Dsonar.organization=fakarniapp \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.java.binaries=target/classes \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -B || echo "SonarCloud non bloquant"
+
+      - name: Package JAR
+        if: ${{ inputs.is-java }}
+        working-directory: ${{ inputs.service-path }}
+        run: mvn package -DskipTests -B
+
+      # ── Python / Flask ──────────────────────────────────
+      - name: Setup Python 3.11
+        if: ${{ !inputs.is-java }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        if: ${{ !inputs.is-java }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ inputs.service-name }}-${{ hashFiles(format('{0}/requirements.txt', inputs.service-path)) }}
+
+      - name: Lint Python
+        if: ${{ !inputs.is-java }}
+        working-directory: ${{ inputs.service-path }}
+        run: |
+          pip install flake8 --quiet
+          flake8 . --max-line-length=120 --exclude=__pycache__,.venv || echo "Lint non bloquant"
+
+      # ── Docker Build & Push vers Docker Hub ─────────────
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker Build & Push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ inputs.service-path }}
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:${{ steps.meta.outputs.short-sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:latest
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:buildcache,mode=max
+
+      - name: Summary
+        run: |
+          echo "### CI OK — ${{ inputs.service-name }}" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | \`${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:${{ steps.meta.outputs.short-sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branche | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+
+  # ── CD auto sur main ────────────────────────────────────
+  # NOTE : CD desactive temporairement (Azure Container Apps bloque par policy ESPRIT)
+  # Pour reactiver : supprimer les # et configurer AZURE_CLIENT_ID dans GitHub Secrets
+  # cd:
+  #   name: CD
+  #   needs: ci
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   uses: ./.github/workflows/cd-deploy.yml
+  #   with:
+  #     service-name: ${{ inputs.image-name }}
+  #     image-name: ${{ inputs.image-name }}
+  #     image-tag: ${{ needs.ci.outputs.image-tag }}
+  #     environment: production
+  #   secrets: inherit

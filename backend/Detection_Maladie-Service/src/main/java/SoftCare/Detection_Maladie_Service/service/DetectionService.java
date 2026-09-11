@@ -27,20 +27,19 @@ public class DetectionService {
 
     private final AnalyseIRMRepository repository;
     private final RestClient flaskRestClient;
-    private final DossierMedicalClient dossierMedicalClient;
+    private final DossierMedicalFeignClient dossierMedicalFeignClient;
 
     @Value("${app.upload-dir:uploads/mri}")
     private String uploadDir;
 
     public DetectionService(AnalyseIRMRepository repository,
                             @Qualifier("flaskRestClient") RestClient flaskRestClient,
-                            DossierMedicalClient dossierMedicalClient) {
+                            DossierMedicalFeignClient dossierMedicalFeignClient) {
         this.repository = repository;
         this.flaskRestClient = flaskRestClient;
-        this.dossierMedicalClient = dossierMedicalClient;
+        this.dossierMedicalFeignClient = dossierMedicalFeignClient;
     }
 
-    // ✅ patientId dynamique passé en paramètre
     public AnalyseIRMResponse analyserIRM(MultipartFile image, String patientId) throws Exception {
 
         // 1. Sauvegarde image sur disque
@@ -75,7 +74,7 @@ public class DetectionService {
         log.info("✅ IA → {} | Confiance : {}%",
                 prediction.getPrediction(), prediction.getConfidence());
 
-        // 3. Sauvegarde en base avec patientId dynamique ✅
+        // 3. Sauvegarde en base
         AnalyseIRM analyse = AnalyseIRM.builder()
                 .nomFichier(filename)
                 .prediction(prediction.getPrediction())
@@ -88,13 +87,13 @@ public class DetectionService {
                 .probNonDemented(prediction.getProbabilities().get("Non_Demented"))
                 .probVeryMildDemented(prediction.getProbabilities().get("Very_Mild_Demented"))
                 .dateAnalyse(LocalDateTime.now())
-                .patientId(patientId)  // ✅ plus de 1L hardcodé
+                .patientId(patientId)
                 .build();
 
         AnalyseIRM saved = repository.save(analyse);
         log.info("💾 Sauvegardé en base → ID = {}", saved.getId());
 
-        // 4. Notification au Dossier_Medical-Service
+        // 4. Notification au Dossier_Medical-service via Feign (Eureka Load Balancer)
         AjouterAnalyseRequest dossierRequest = AjouterAnalyseRequest.builder()
                 .analyseIrmId(saved.getId())
                 .patientId(saved.getPatientId())
@@ -111,7 +110,12 @@ public class DetectionService {
                 .dateAnalyse(saved.getDateAnalyse())
                 .build();
 
-        dossierMedicalClient.envoyerAnalyseAuDossier(dossierRequest);
+        try {
+            dossierMedicalFeignClient.ajouterAnalyse(dossierRequest);
+            log.info("✅ Dossier médical mis à jour via Feign !");
+        } catch (Exception e) {
+            log.error("❌ Erreur dossier médical (non bloquant): {}", e.getMessage());
+        }
 
         return mapToResponse(saved);
     }

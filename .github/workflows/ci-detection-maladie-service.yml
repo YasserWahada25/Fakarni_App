@@ -1,0 +1,32 @@
+﻿# CI â€” Detection Maladie Service (IRM + Feignâ†’DossierMedical + MySQL)
+name: CI â€” Detection Maladie Service
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/Detection_Maladie-Service/**'
+      - '.github/workflows/ci-detection-maladie-service.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/Detection_Maladie-Service/**'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci-reusable.yml
+    with:
+      service-name: "Detection Maladie Service"
+      service-path: "backend/Detection_Maladie-Service"
+      image-name: "fakarni-detection-maladie-service"
+      sonar-project-key: "fakarni-detection-maladie-service"
+      is-java: true
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      CONTAINER_APPS_ENV: ${{ secrets.CONTAINER_APPS_ENV }}

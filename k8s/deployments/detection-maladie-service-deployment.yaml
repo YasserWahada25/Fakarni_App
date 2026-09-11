@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: detection-maladie-service
+  namespace: fakarni-prod
+  labels:
+    app: detection-maladie-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: detection-maladie-service
+  template:
+    metadata:
+      labels:
+        app: detection-maladie-service
+    spec:
+      containers:
+        - name: detection-maladie-service
+          image: fakarnicr.azurecr.io/fakarni-detection-maladie-service:latest
+          ports:
+            - containerPort: 8058
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: fakarni-common-config
+                  key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://fakarni-mysql.mysql.database.azure.com:3306/detection_maladie_db?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=true"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: fakarni-common-config
+                  key: MYSQL_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: fakarni-secrets
+                  key: MYSQL_PASSWORD
+            - name: IA_FLASK_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: fakarni-common-config
+                  key: IA_FLASK_URL
+          resources:
+            requests:
+              memory: "384Mi"
+              cpu: "150m"
+            limits:
+              memory: "768Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8058
+            initialDelaySeconds: 40
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8058
+            initialDelaySeconds: 70
+            periodSeconds: 15

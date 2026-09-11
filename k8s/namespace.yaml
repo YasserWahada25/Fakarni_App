@@ -1,4 +1,19 @@
+# ============================================================
+# Namespaces FakarniApp
+# Appliquer en premier : kubectl apply -f k8s/namespace.yaml
+# ============================================================
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: fakarni
+  name: fakarni-prod
+  labels:
+    app.kubernetes.io/part-of: fakarniapp
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fakarni-staging
+  labels:
+    app.kubernetes.io/part-of: fakarniapp
+    environment: staging

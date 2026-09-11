@@ -1,0 +1,25 @@
+# ============================================================
+# ConfigMap commun — valeurs non-sensibles partagées
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fakarni-common-config
+  namespace: fakarni-prod
+  labels:
+    app.kubernetes.io/part-of: fakarniapp
+data:
+  # Eureka (service discovery interne AKS)
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-service:8761/eureka/"
+  EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+  SPRING_PROFILES_ACTIVE: "docker"
+  # MySQL host (Azure Database for MySQL Flexible Server)
+  MYSQL_HOST: "fakarni-mysql.mysql.database.azure.com"
+  MYSQL_PORT: "3306"
+  MYSQL_USERNAME: "fakarni_admin"
+  # Flask IA
+  IA_FLASK_URL: "http://flask-ia-service:5000"
+  # Frontend URL
+  APP_FRONTEND_URL: "https://fakarni.example.com"
+  # Facebook Graph API
+  FACEBOOK_GRAPH_API_VERSION: "v21.0"

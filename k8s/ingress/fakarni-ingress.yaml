@@ -1,0 +1,36 @@
+# ============================================================
+# Ingress — FakarniApp
+# Expose l'API Gateway publiquement via Azure Application Gateway
+# Prérequis : AGIC (Application Gateway Ingress Controller) installé sur AKS
+#   ou nginx-ingress (remplacer kubernetes.io/ingress.class: nginx)
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fakarni-ingress
+  namespace: fakarni-prod
+  annotations:
+    # Azure Application Gateway Ingress Controller
+    kubernetes.io/ingress.class: azure/application-gateway
+    # TLS géré par Azure (Certificate Manager ou Azure Key Vault)
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    # Taille max des requêtes (uploads IRM + images)
+    appgw.ingress.kubernetes.io/request-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  tls:
+    - hosts:
+        - api.fakarni.example.com
+      secretName: fakarni-tls
+  rules:
+    # Tout le trafic entre par la Gateway Spring Cloud
+    - host: api.fakarni.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway-service
+                port:
+                  number: 8090

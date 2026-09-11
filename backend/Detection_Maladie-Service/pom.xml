@@ -83,6 +83,12 @@
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
 
+		<!-- OpenFeign (communication inter-services via Eureka) -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+
 		<!-- ═══════════════════════════════════ -->
 		<!--        ✅ APPEL API FLASK           -->
 		<!--   RestClient natif Spring Boot 4    -->

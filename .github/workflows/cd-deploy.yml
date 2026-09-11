@@ -1,0 +1,139 @@
+# ============================================================
+# WORKFLOW CD — FakarniApp
+# Deploy sur Azure Container Apps depuis Docker Hub
+# ============================================================
+name: CD — Deploy to Azure Container Apps
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+      image-name:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+      environment:
+        required: false
+        type: string
+        default: production
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+      AZURE_RESOURCE_GROUP:
+        required: true
+      CONTAINER_APPS_ENV:
+        required: true
+
+  workflow_dispatch:
+    inputs:
+      service-name:
+        description: "Nom du service"
+        required: true
+        type: choice
+        options:
+          - eureka-service
+          - gateway-service
+          - user-service
+          - chat-service
+          - meeting-insights-service
+          - tracking-service
+          - geofencing-service
+          - activite-educative-service
+          - detection-maladie-service
+          - dossier-medical-service
+          - event-service
+          - group-service
+          - post-service
+          - session-service
+          - suivi-engagement-service
+          - flask-ia-service
+      image-tag:
+        description: "Tag image (defaut: latest)"
+        required: false
+        default: "latest"
+      environment:
+        description: "Environnement cible"
+        required: true
+        type: choice
+        default: production
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.service-name }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Login Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Enregistrer le provider Container Apps si besoin
+      - name: Register Container Apps provider
+        run: |
+          az provider register --namespace Microsoft.App --wait 2>/dev/null || true
+          az provider register --namespace Microsoft.OperationalInsights --wait 2>/dev/null || true
+
+      # Creer ou mettre a jour la Container App
+      - name: Deploy to Azure Container Apps
+        run: |
+          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:${{ inputs.image-tag }}"
+          APP_NAME="${{ inputs.service-name }}"
+          RG="${{ secrets.AZURE_RESOURCE_GROUP }}"
+          ENV="${{ secrets.CONTAINER_APPS_ENV }}"
+
+          # Verifier si la container app existe
+          EXISTS=$(az containerapp show --name "$APP_NAME" --resource-group "$RG" --query "name" --output tsv 2>/dev/null || echo "")
+
+          if [ -z "$EXISTS" ]; then
+            echo "Creation de la Container App : $APP_NAME"
+            az containerapp create \
+              --name "$APP_NAME" \
+              --resource-group "$RG" \
+              --environment "$ENV" \
+              --image "$IMAGE" \
+              --registry-server docker.io \
+              --registry-username "${{ secrets.DOCKERHUB_USERNAME }}" \
+              --registry-password "${{ secrets.DOCKERHUB_TOKEN }}" \
+              --target-port 8080 \
+              --ingress external \
+              --min-replicas 0 \
+              --max-replicas 3 \
+              --cpu 0.5 \
+              --memory 1.0Gi
+          else
+            echo "Mise a jour de la Container App : $APP_NAME"
+            az containerapp update \
+              --name "$APP_NAME" \
+              --resource-group "$RG" \
+              --image "$IMAGE"
+          fi
+
+      - name: Get app URL
+        run: |
+          URL=$(az containerapp show \
+            --name "${{ inputs.service-name }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --query "properties.configuration.ingress.fqdn" \
+            --output tsv 2>/dev/null || echo "N/A")
+          echo "### Deploy OK — ${{ inputs.service-name }}" >> $GITHUB_STEP_SUMMARY
+          echo "URL : https://$URL" >> $GITHUB_STEP_SUMMARY
+          echo "Image : ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:${{ inputs.image-tag }}" >> $GITHUB_STEP_SUMMARY

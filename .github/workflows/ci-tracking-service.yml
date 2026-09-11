@@ -1,0 +1,32 @@
+﻿# CI â€” Tracking Service (GPS + Twilio SMS + MySQL)
+name: CI â€” Tracking Service
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/Tracking-Service/**'
+      - '.github/workflows/ci-tracking-service.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/Tracking-Service/**'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci-reusable.yml
+    with:
+      service-name: "Tracking Service"
+      service-path: "backend/Tracking-Service"
+      image-name: "fakarni-tracking-service"
+      sonar-project-key: "fakarni-tracking-service"
+      is-java: true
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      CONTAINER_APPS_ENV: ${{ secrets.CONTAINER_APPS_ENV }}
