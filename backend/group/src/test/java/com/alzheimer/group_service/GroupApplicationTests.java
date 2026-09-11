@@ -1,12 +1,15 @@
-package tn.SoftCare.User;
+package com.alzheimer.group_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(
+    classes = GroupServiceApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.NONE
+)
 @ActiveProfiles("test")
-class UserApplicationTests {
+class GroupApplicationTests {
     @Test
     void contextLoads() {
     }
