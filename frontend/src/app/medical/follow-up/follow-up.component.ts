@@ -7,6 +7,7 @@ import {
   AnalyseIRMResponse, DetectionService,
   DossierMedicalResponse, PatientUser
 } from '../services/detection';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-follow-up',
@@ -186,7 +187,7 @@ export class FollowUpComponent implements OnInit {
      MRI IMAGE URL
   ════════════════════════════════════════════════════════ */
   getMriImageUrl(nomFichier: string): string {
-    return `http://localhost:8058/api/detection/image/${nomFichier}`;
+    return `${environment.apiUrl || ''}/api/detection/image/${nomFichier}`;
   }
 
   onImageError(event: Event): void {

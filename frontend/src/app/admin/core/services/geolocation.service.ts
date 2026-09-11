@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { Zone, PatientLocation } from '../models/geographic-zone.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class GeolocationService {
     // CORRECTION : On s'arrête à "geofencing"
-    private apiUrl = 'http://localhost:8090/api/geofencing';
+    private apiUrl = `${environment.apiUrl || ''}/api/geofencing`;
 
     // Données simulées pour la localisation (à remplacer par une API plus tard)
     private patientLocations: PatientLocation[] = [

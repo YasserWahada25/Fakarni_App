@@ -4,11 +4,12 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Alert, AlertStatistics } from '../models/alert.model';
 import { AlertSettings, DEFAULT_ALERT_SETTINGS } from '../models/alert-settings.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AlertService {
 
-    private gateway       = 'http://localhost:8090';
+    private gateway       = environment.apiUrl || '';
     private geofencingApi = `${this.gateway}/api/geofencing`;
     private headers       = new HttpHeaders({ 'Content-Type': 'application/json' });
     private readonly SETTINGS_KEY = 'backoffice_alert_settings';

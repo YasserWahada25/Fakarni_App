@@ -31,7 +31,7 @@ function shouldUseCredentials(url: string): boolean {
     lowered.startsWith('/auth') ||
     lowered.startsWith('/session') ||
     lowered.startsWith('/ws') ||
-    lowered.includes('localhost:8090')
+    lowered.includes('fakarni-gateway.azurewebsites.net')
   );
 }
 

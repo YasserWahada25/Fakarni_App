@@ -15,7 +15,7 @@ function gatewayBase(): string {
   if (!environment.production) {
     return trimmed;
   }
-  return trimmed !== '' ? trimmed : 'http://localhost:8090';
+  return trimmed !== '' ? trimmed : '';
 }
 
 const API_BASE = gatewayBase();

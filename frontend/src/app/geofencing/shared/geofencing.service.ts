@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, timer, switchMap, shareReplay, of, Subject } from 'rxjs';
 import { timeout, catchError } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 export interface Zone {
     id: number;
@@ -44,7 +45,7 @@ export interface NotificationPreference {
 @Injectable({ providedIn: 'root' })
 export class GeofencingService {
 
-    private gateway       = 'http://localhost:8090';
+    private gateway       = environment.apiUrl || '';
     private geofencingApi = `${this.gateway}/api/geofencing`;
     private trackingApi   = `${this.gateway}/api/tracking`;
     private headers       = new HttpHeaders({ 'Content-Type': 'application/json' });

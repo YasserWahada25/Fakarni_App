@@ -7,6 +7,7 @@ import { UploadService } from './services/upload.service';
 import { Group, GroupType, MemberRole } from './models/group.model';
 import { forkJoin, of } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 @Component({
     selector: 'app-groups',
@@ -193,7 +194,7 @@ export class GroupsComponent implements OnInit {
             return coverImageUrl;
         }
         
-        return `http://localhost:8090${coverImageUrl}`;
+        return `${environment.apiUrl || ''}${coverImageUrl}`;
     }
 
     // Gérer les erreurs de chargement d'image
