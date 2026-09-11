@@ -95,12 +95,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-<!-- H2 pour les tests uniquement -->
-<dependency>
-<groupId>com.h2database</groupId>
-<artifactId>h2</artifactId>
-<scope>test</scope>
-</dependency>
 		</dependencies>
 	</dependencyManagement>
 

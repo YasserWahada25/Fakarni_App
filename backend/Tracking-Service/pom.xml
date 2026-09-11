@@ -64,17 +64,17 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.twilio.sdk</groupId>
-			<artifactId>twilio</artifactId>
-			<version>9.14.0</version>
-		</dependency>
 <!-- H2 pour les tests uniquement -->
 <dependency>
 <groupId>com.h2database</groupId>
 <artifactId>h2</artifactId>
 <scope>test</scope>
 </dependency>
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>9.14.0</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -86,12 +86,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-<!-- H2 pour les tests uniquement -->
-<dependency>
-<groupId>com.h2database</groupId>
-<artifactId>h2</artifactId>
-<scope>test</scope>
-</dependency>
 		</dependencies>
 	</dependencyManagement>
 

@@ -100,6 +100,7 @@ jobs:
           path: ${{ inputs.service-path }}/**/target/surefire-reports/*.xml
           reporter: java-junit
           fail-on-error: false
+          max-annotations: 50
 
       - name: SonarCloud analysis
         if: ${{ inputs.is-java }}
@@ -157,8 +158,6 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:${{ steps.meta.outputs.short-sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:buildcache,mode=max
 
       - name: Summary
         run: |
