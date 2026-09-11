@@ -1,8 +1,10 @@
 # ============================================================
-# WORKFLOW CD — FakarniApp
-# Deploy sur Azure Container Apps depuis Docker Hub
+# WORKFLOW CD - FakarniApp
+# Deploy sur Azure Web App for Containers depuis Docker Hub
+# Region: swedencentral (autorisee par policy ESPRIT)
+# Plan: fakarni-plan (B1 Linux)
 # ============================================================
-name: CD — Deploy to Azure Container Apps
+name: "CD - Deploy to Azure Web App"
 
 on:
   workflow_call:
@@ -10,9 +12,11 @@ on:
       service-name:
         required: true
         type: string
+        description: "Nom de la webapp Azure (ex: fakarni-eureka)"
       image-name:
         required: true
         type: string
+        description: "Nom de l'image Docker Hub (ex: fakarni-eureka-service)"
       image-tag:
         required: true
         type: string
@@ -25,115 +29,92 @@ on:
         required: true
       DOCKERHUB_TOKEN:
         required: true
-      AZURE_CLIENT_ID:
-        required: true
-      AZURE_TENANT_ID:
-        required: true
-      AZURE_SUBSCRIPTION_ID:
+      AZURE_CREDENTIALS:
         required: true
       AZURE_RESOURCE_GROUP:
-        required: true
-      CONTAINER_APPS_ENV:
         required: true
 
   workflow_dispatch:
     inputs:
       service-name:
-        description: "Nom du service"
+        description: "Nom du service Azure (ex: fakarni-eureka)"
         required: true
         type: choice
         options:
-          - eureka-service
-          - gateway-service
-          - user-service
-          - chat-service
-          - meeting-insights-service
-          - tracking-service
-          - geofencing-service
-          - activite-educative-service
-          - detection-maladie-service
-          - dossier-medical-service
-          - event-service
-          - group-service
-          - post-service
-          - session-service
-          - suivi-engagement-service
-          - flask-ia-service
+          - fakarni-eureka
+          - fakarni-gateway
+          - fakarni-user
+          - fakarni-chat
+          - fakarni-meeting
+          - fakarni-tracking
+          - fakarni-geofencing
+          - fakarni-activite
+          - fakarni-detection
+          - fakarni-dossier
+          - fakarni-event
+          - fakarni-group
+          - fakarni-post
+          - fakarni-session
+          - fakarni-suivi
+          - fakarni-flask-ia
+      image-name:
+        description: "Image Docker Hub (ex: fakarni-eureka-service)"
+        required: true
       image-tag:
-        description: "Tag image (defaut: latest)"
+        description: "Tag (defaut: latest)"
         required: false
         default: "latest"
-      environment:
-        description: "Environnement cible"
-        required: true
-        type: choice
-        default: production
-        options:
-          - staging
-          - production
 
 jobs:
   deploy:
-    name: Deploy ${{ inputs.service-name }}
+    name: "Deploy ${{ inputs.service-name }}"
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment || 'production' }}
 
     steps:
-      - name: Login Azure (OIDC)
+      - name: "Login Azure"
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Enregistrer le provider Container Apps si besoin
-      - name: Register Container Apps provider
+      - name: "Configure Docker Hub credentials on Web App"
         run: |
-          az provider register --namespace Microsoft.App --wait 2>/dev/null || true
-          az provider register --namespace Microsoft.OperationalInsights --wait 2>/dev/null || true
-
-      # Creer ou mettre a jour la Container App
-      - name: Deploy to Azure Container Apps
-        run: |
-          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:${{ inputs.image-tag }}"
-          APP_NAME="${{ inputs.service-name }}"
-          RG="${{ secrets.AZURE_RESOURCE_GROUP }}"
-          ENV="${{ secrets.CONTAINER_APPS_ENV }}"
-
-          # Verifier si la container app existe
-          EXISTS=$(az containerapp show --name "$APP_NAME" --resource-group "$RG" --query "name" --output tsv 2>/dev/null || echo "")
-
-          if [ -z "$EXISTS" ]; then
-            echo "Creation de la Container App : $APP_NAME"
-            az containerapp create \
-              --name "$APP_NAME" \
-              --resource-group "$RG" \
-              --environment "$ENV" \
-              --image "$IMAGE" \
-              --registry-server docker.io \
-              --registry-username "${{ secrets.DOCKERHUB_USERNAME }}" \
-              --registry-password "${{ secrets.DOCKERHUB_TOKEN }}" \
-              --target-port 8080 \
-              --ingress external \
-              --min-replicas 0 \
-              --max-replicas 3 \
-              --cpu 0.5 \
-              --memory 1.0Gi
-          else
-            echo "Mise a jour de la Container App : $APP_NAME"
-            az containerapp update \
-              --name "$APP_NAME" \
-              --resource-group "$RG" \
-              --image "$IMAGE"
-          fi
-
-      - name: Get app URL
-        run: |
-          URL=$(az containerapp show \
+          az webapp config container set \
             --name "${{ inputs.service-name }}" \
             --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
-            --query "properties.configuration.ingress.fqdn" \
-            --output tsv 2>/dev/null || echo "N/A")
-          echo "### Deploy OK — ${{ inputs.service-name }}" >> $GITHUB_STEP_SUMMARY
-          echo "URL : https://$URL" >> $GITHUB_STEP_SUMMARY
-          echo "Image : ${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:${{ inputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
+            --docker-custom-image-name "${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:${{ inputs.image-tag }}" \
+            --docker-registry-server-url "https://index.docker.io" \
+            --docker-registry-server-user "${{ secrets.DOCKERHUB_USERNAME }}" \
+            --docker-registry-server-password "${{ secrets.DOCKERHUB_TOKEN }}"
+
+      - name: "Restart Web App to pull new image"
+        run: |
+          az webapp restart \
+            --name "${{ inputs.service-name }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}"
+
+      - name: "Wait for app to start (60s)"
+        run: sleep 60
+
+      - name: "Health check"
+        id: health
+        run: |
+          URL=$(az webapp show \
+            --name "${{ inputs.service-name }}" \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --query "defaultHostName" --output tsv)
+          echo "app-url=https://$URL" >> $GITHUB_OUTPUT
+          # Test health endpoint
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://$URL/actuator/health" || echo "000")
+          echo "http-code=$HTTP_CODE" >> $GITHUB_OUTPUT
+          echo "App URL: https://$URL"
+          echo "Health check HTTP code: $HTTP_CODE"
+
+      - name: "Summary"
+        run: |
+          echo "### Deploy OK - ${{ inputs.service-name }}" >> $GITHUB_STEP_SUMMARY
+          echo "| Champ | Valeur |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| URL | ${{ steps.health.outputs.app-url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | \`${{ secrets.DOCKERHUB_USERNAME }}/${{ inputs.image-name }}:${{ inputs.image-tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Health | HTTP ${{ steps.health.outputs.http-code }} |" >> $GITHUB_STEP_SUMMARY
