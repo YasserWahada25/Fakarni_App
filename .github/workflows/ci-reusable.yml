@@ -92,9 +92,21 @@ jobs:
         working-directory: ${{ inputs.service-path }}
         run: mvn test -B
 
-      - name: Publish test results
+      - name: Check test reports exist
         if: ${{ inputs.is-java && always() }}
+        id: check-reports
+        run: |
+          if find "${{ inputs.service-path }}" -name "*.xml" -path "*/surefire-reports/*" 2>/dev/null | grep -q .; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "No surefire reports found — skipping test reporter"
+          fi
+
+      - name: Publish test results
+        if: ${{ inputs.is-java && always() && steps.check-reports.outputs.found == 'true' }}
         uses: dorny/test-reporter@v1
+        continue-on-error: true
         with:
           name: Tests — ${{ inputs.service-name }}
           path: ${{ inputs.service-path }}/**/target/surefire-reports/*.xml
